@@ -1,37 +1,156 @@
 {% extends "base.html" %}
+
+{% block title %}Game Lobby - TradeLeague{% endblock %}
+
 {% block content %}
-
-<h2 class="text-3xl mb-8">Game Lobby</h2>
-
-<div class="grid grid-cols-2 gap-8">
-
-<!-- Create Room -->
-<div class="bg-slate-800 p-8 rounded-xl">
-  <h3 class="text-xl mb-4 text-green-400">Host Game</h3>
-  <p>Create a new trading match</p>
-
-  <a href="/create-room/" class="bg-green-600 px-6 py-3 rounded-xl inline-block mt-4">
-    Create Room
-  </a>
-</div>
-
-<!-- Join Room -->
-<div class="bg-slate-800 p-8 rounded-xl">
-  <h3 class="text-xl mb-4 text-blue-400">Join Game</h3>
-
-  {% for r in rooms %}
-    <div class="flex justify-between bg-slate-700 p-3 rounded mb-3">
-      <span>Room {{ r.room_code }}</span>
-      <a href="/waiting/{{r.id}}/" class="text-green-400">
-        Join
-      </a>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <div class="mb-12">
+        <h1 class="text-4xl font-bold text-white mb-2">Game Lobby</h1>
+        <p class="text-gray-400">Host a match or join an existing game room</p>
     </div>
-  {% empty %}
-    <p>No open rooms</p>
-  {% endfor %}
+
+    <!-- Action Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        
+        <!-- Host Game Card -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg hover:border-blue-500 transition">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Host Game</h2>
+                    <p class="text-gray-400">Create a new 1v1 trading match</p>
+                </div>
+                <span class="text-4xl">🏠</span>
+            </div>
+
+            <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 mb-6">
+                <ul class="space-y-2 text-gray-300 text-sm">
+                    <li class="flex items-start">
+                        <span class="text-blue-400 mr-2">✓</span>
+                        <span>Become the match host</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-400 mr-2">✓</span>
+                        <span>Wait for an opponent to join</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-400 mr-2">✓</span>
+                        <span>Start trading when ready</span>
+                    </li>
+                </ul>
+            </div>
+
+            <a href="{% url 'create_room' %}"
+               class="block w-full bg-gradient-to-r from-green-600 to-green-700
+                      hover:from-green-700 hover:to-green-800
+                      text-white font-bold py-3 px-6 rounded-lg
+                      transition transform hover:scale-105 text-center">
+                Create Room
+            </a>
+        </div>
+
+        <!-- Join Game Card -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg hover:border-blue-500 transition">
+            <div class="flex items-start justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Join Game</h2>
+                    <p class="text-gray-400">Join an existing waiting room</p>
+                </div>
+                <span class="text-4xl">🎮</span>
+            </div>
+
+            <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 mb-6">
+                <p class="text-blue-400 font-semibold text-lg">
+                    {% if rooms.count > 0 %}
+                        {{ rooms.count }} room{{ rooms.count|pluralize }} available
+                    {% else %}
+                        No rooms available
+                    {% endif %}
+                </p>
+                <p class="text-gray-400 text-sm mt-2">Browse available games below</p>
+            </div>
+
+            <div class="text-center">
+                <p class="text-gray-500 text-sm">See available rooms in the list below</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Available Rooms Section -->
+    <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <span class="text-blue-400 mr-3">🔍</span> Available Games
+        </h2>
+
+        {% if rooms %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for room in rooms %}
+                    <div class="bg-fintech-dark border border-gray-700 rounded-xl p-6 hover:border-blue-500 transition">
+
+                        <!-- Room Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-gray-400 text-xs font-semibold uppercase">Room Code</p>
+                                <p class="text-xl font-bold text-blue-400 font-mono">
+                                    {{ room.room_code }}
+                                </p>
+                            </div>
+                            <span class="text-3xl">🎯</span>
+                        </div>
+
+                        <!-- Room Info -->
+                        <div class="space-y-3 mb-6">
+                            <div class="bg-fintech-darker border border-gray-700/50 rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Host</p>
+                                <p class="text-white font-semibold">{{ room.host.username }}</p>
+                            </div>
+
+                            <div class="bg-fintech-darker border border-gray-700/50 rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Mode</p>
+                                <p class="text-white font-semibold capitalize">
+                                    {{ room.get_mode_display }}
+                                </p>
+                            </div>
+
+                            <div class="bg-fintech-darker border border-gray-700/50 rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Status</p>
+                                <p class="text-green-400 font-semibold">
+                                    <span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                                    Waiting for opponent
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ✅ FIXED JOIN BUTTON -->
+                        <a href="{% url 'join_room' room.id %}"
+                           class="block w-full bg-blue-600 hover:bg-blue-700
+                                  text-white font-bold py-3 px-4 rounded-lg
+                                  transition transform hover:scale-105 text-center">
+                            Join Game
+                        </a>
+
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- No Rooms State -->
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <div class="text-6xl mb-4">🏜️</div>
+                <h3 class="text-2xl font-bold text-white mb-2">No Games Available</h3>
+                <p class="text-gray-400 mb-6 max-w-md">
+                    There are currently no waiting rooms. Be the first to host a game and invite your opponents!
+                </p>
+                <a href="{% url 'create_room' %}"
+                   class="bg-green-600 hover:bg-green-700
+                          text-white font-bold py-3 px-8 rounded-lg
+                          transition transform hover:scale-105">
+                    Create First Room
+                </a>
+            </div>
+        {% endif %}
+    </div>
 
 </div>
-
-</div>
-
 {% endblock %}

@@ -1,22 +1,150 @@
 {% extends "base.html" %}
+
+{% block title %}Waiting Room - TradeLeague{% endblock %}
+
 {% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-120px)]">
+    <div class="w-full max-w-2xl px-4">
 
-<div class="max-w-xl mx-auto bg-slate-800 p-10 rounded-xl text-center">
+        <!-- Main Card -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-12 shadow-2xl text-center">
 
-<h2 class="text-2xl mb-4">Waiting Room</h2>
+            <!-- Animated Waiting Icon -->
+            <div class="mb-8">
+                <div class="text-6xl mb-4 animate-bounce">⏳</div>
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    Ready to Trade?
+                </h1>
+                <p class="text-gray-400 text-lg">
+                    Waiting for opponent to join...
+                </p>
+            </div>
 
-<p class="mb-4">Room Code:</p>
-<p class="text-3xl text-green-400 mb-6">
-{{ room.room_code }}
-</p>
+            <!-- Room Code Section -->
+            <div class="bg-fintech-dark border border-blue-700/30 rounded-xl p-8 mb-8">
+                <p class="text-gray-400 text-sm font-semibold uppercase mb-3">Room Code</p>
 
-<p>Share this with opponent</p>
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <p class="text-5xl font-bold text-blue-400 font-mono tracking-wider">
+                        {{ room.room_code }}
+                    </p>
+                    <button onclick="navigator.clipboard.writeText('{{ room.room_code }}')"
+                            class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition"
+                            title="Copy room code">
+                        📋
+                    </button>
+                </div>
 
-<a href="/game/{{room.id}}/" 
-   class="bg-green-600 px-6 py-3 rounded-xl mt-6 inline-block">
-Start Game
-</a>
+                <p class="text-gray-500 text-sm">
+                    Share this code with your opponent
+                </p>
+            </div>
 
+            <!-- Room Status -->
+            <div class="grid grid-cols-2 gap-4 mb-8">
+
+                <!-- Host -->
+                <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
+                    <p class="text-gray-500 text-xs font-semibold uppercase mb-2">Host</p>
+                    <p class="text-white font-semibold">{{ room.host.username }}</p>
+                    <p class="text-green-400 text-sm mt-1">✓ Connected</p>
+                </div>
+
+                <!-- Opponent -->
+                <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
+                    <p class="text-gray-500 text-xs font-semibold uppercase mb-2">Opponent</p>
+
+                    {% if room.opponent %}
+                        <p class="text-white font-semibold">{{ room.opponent.username }}</p>
+                        <p class="text-green-400 text-sm mt-1">✓ Connected</p>
+                    {% else %}
+                        <p class="text-gray-400 font-semibold">Waiting...</p>
+                        <div class="flex justify-center space-x-1 mt-2">
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" style="animation-delay:0.2s"></div>
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" style="animation-delay:0.4s"></div>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Instructions -->
+            <div class="bg-blue-900/20 border border-blue-700/30 rounded-lg p-6 mb-8 text-left">
+                <h3 class="text-blue-300 font-semibold mb-3">📋 What's Next?</h3>
+                <ol class="space-y-2 text-gray-300 text-sm">
+                    <li class="flex items-start">
+                        <span class="text-blue-400 font-bold mr-3">1.</span>
+                        Share the room code with your opponent
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-400 font-bold mr-3">2.</span>
+                        Opponent joins the room
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-400 font-bold mr-3">3.</span>
+                        Host starts the game
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+
+                {% if room.opponent %}
+                    {% if user == room.host %}
+                        <!-- HOST: Start Game -->
+                        <form method="post" class="flex-1">
+                            {% csrf_token %}
+                            <button type="submit"
+                                class="w-full bg-gradient-to-r from-green-600 to-green-700
+                                       hover:from-green-700 hover:to-green-800
+                                       text-white font-bold py-3 px-6 rounded-lg
+                                       transition transform hover:scale-105">
+                                ⚡ Start Game
+                            </button>
+                        </form>
+                    {% else %}
+                        <!-- OPPONENT: Waiting -->
+                        <button disabled
+                            class="flex-1 bg-gray-600 cursor-not-allowed
+                                   text-gray-400 font-bold py-3 px-6 rounded-lg
+                                   opacity-60">
+                            ⏳ Waiting for Host to Start
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <!-- No opponent -->
+                    <button disabled
+                        class="flex-1 bg-gray-600 cursor-not-allowed
+                               text-gray-400 font-bold py-3 px-6 rounded-lg
+                               opacity-50">
+                        ⏳ Waiting for Opponent...
+                    </button>
+                {% endif %}
+
+                <!-- Back Button -->
+                <a href="{% url 'lobby' %}"
+                   class="flex-1 bg-fintech-dark border-2 border-gray-600
+                          text-gray-300 hover:border-blue-600 hover:text-blue-400
+                          font-bold py-3 px-6 rounded-lg transition text-center">
+                    Back to Lobby
+                </a>
+            </div>
+
+            <!-- Auto Refresh Info -->
+            <p class="text-gray-500 text-xs mt-6">
+                Page updates automatically • Refresh if needed
+            </p>
+
+        </div>
+    </div>
 </div>
 
+<!-- Auto-refresh every 3 seconds -->
+<script>
+    setTimeout(() => {
+        location.reload();
+    }, 3000);
+</script>
 {% endblock %}

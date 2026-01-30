@@ -19,6 +19,7 @@ class Profile(models.Model):
     games_played = models.IntegerField(default=0)
     accuracy_score = models.FloatField(default=0)
     league_level = models.CharField(max_length=20, default="NPC")
+    account_balance = models.FloatField(default=0)
 
     def update_league(self):
         self.league_level = get_league(self.total_profit_counter)

@@ -1,49 +1,263 @@
 {% extends "base.html" %}
+
+{% block title %}Dashboard - TradeLeague{% endblock %}
+
 {% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Welcome Section -->
+    <div class="mb-12">
+        <h1 class="text-4xl font-bold text-white mb-2">Welcome back, <span class="text-blue-400">{{ user.username }}</span>!</h1>
+        <p class="text-gray-400">Track your progress and compete with other traders</p>
+    </div>
 
-<h2 class="text-3xl mb-8">Dashboard</h2>
-
-<div class="grid grid-cols-3 gap-6">
-
-<!-- League -->
-<div class="bg-slate-800 p-6 rounded-xl">
-<h3>League</h3>
-<p class="text-2xl text-yellow-400">
-{{ profile.league_level }}
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        
+        <!-- Account Balance -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-400 font-semibold">Account Balance</h3>
+                <span class="text-3xl">💰</span>
+            </div>
+            <p class="text-4xl font-bold {% if profile.account_balance >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+    ₹{{ profile.account_balance|floatformat:0 }}
 </p>
+
+            <p class="text-gray-500 text-sm mt-3">Total Profit Earned</p>
+        </div>
+
+        <!-- League Badge -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-400 font-semibold">League Rank</h3>
+                <span class="text-3xl">🏆</span>
+            </div>
+            <div class="flex items-baseline space-x-2">
+                <p class="text-4xl font-bold">
+                    {% if profile.league_level == 'NPC' %}
+                        <span class="text-gray-400">{{ profile.league_level }}</span>
+                    {% elif profile.league_level == 'VALID' %}
+                        <span class="text-blue-400">{{ profile.league_level }}</span>
+                    {% elif profile.league_level == 'MAIN' %}
+                        <span class="text-purple-400">{{ profile.league_level }}</span>
+                    {% elif profile.league_level == 'GOAT' %}
+                        <span class="text-yellow-400">{{ profile.league_level }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <p class="text-gray-500 text-sm mt-3">Current ranking tier</p>
+        </div>
+
+        <!-- Total Profit -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-400 font-semibold">Total Profit</h3>
+                <span class="text-3xl">📈</span>
+            </div>
+            <p class="text-4xl font-bold text-green-400">
+                ₹{{ profile.total_profit_counter|default:"0" }}
+            </p>
+            <p class="text-gray-500 text-sm mt-3">Cumulative earnings across all matches</p>
+        </div>
+
+        <!-- Win Streak -->
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-gray-400 font-semibold">Win Streak</h3>
+                <span class="text-3xl">🔥</span>
+            </div>
+            <p class="text-4xl font-bold text-orange-400">
+                {{ profile.win_streak|default:"0" }}
+            </p>
+            <p class="text-gray-500 text-sm mt-3">Consecutive victories</p>
+        </div>
+
+    </div>
+
+    <!-- Profit Chart Section -->
+    <div class="mb-12">
+        <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <span class="text-green-400 mr-3">📊</span> Profit Timeline
+            </h2>
+            
+            <div class="relative h-80">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Leaderboard -->
+        <div class="lg:col-span-2">
+            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                    <span class="text-yellow-400 mr-2">🥇</span> Top Traders
+                </h2>
+                
+                <div class="space-y-2">
+                    {% for leader in leaders %}
+                        <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 hover:border-blue-500/50 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-gray-500 font-bold w-6">{{ forloop.counter }}</span>
+                                    <div>
+                                        <p class="text-white font-semibold">{{ leader.user.username }}</p>
+                                        <p class="text-gray-500 text-sm">
+                                            {% if leader.league_level == 'NPC' %}
+                                                <span class="text-gray-400">{{ leader.league_level }}</span>
+                                            {% elif leader.league_level == 'VALID' %}
+                                                <span class="text-blue-400">{{ leader.league_level }}</span>
+                                            {% elif leader.league_level == 'MAIN' %}
+                                                <span class="text-purple-400">{{ leader.league_level }}</span>
+                                            {% elif leader.league_level == 'GOAT' %}
+                                                <span class="text-yellow-400">{{ leader.league_level }}</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-green-400 font-bold text-lg">₹{{ leader.total_profit_counter|default:"0" }}</p>
+                                    <p class="text-gray-500 text-sm">{{ leader.win_streak|default:"0" }} wins</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-8">
+                            <p class="text-gray-400">No traders yet. Be the first!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div>
+            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg sticky top-24">
+                <h2 class="text-2xl font-bold text-white mb-6">Actions</h2>
+                
+                <div class="space-y-4">
+                    <!-- Start Game Button -->
+                    <a href="{% url 'create_room' %}" class="block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 text-center">
+                        <span class="text-lg">⚡ Start New Game</span>
+                    </a>
+
+                    <!-- Join Lobby Button -->
+                    <a href="{% url 'lobby' %}" class="block w-full bg-fintech-dark border-2 border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 text-center">
+                        <span class="text-lg">🎮 Join Lobby</span>
+                    </a>
+
+                    <!-- Stats Info -->
+                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 mt-6">
+                        <p class="text-gray-400 text-sm mb-2">Games Played</p>
+                        <p class="text-2xl font-bold text-white">{{ profile.games_played|default:"0" }}</p>
+                    </div>
+
+                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
+                        <p class="text-gray-400 text-sm mb-2">Accuracy Score</p>
+                        <p class="text-2xl font-bold text-blue-400">{{ profile.accuracy_score|default:"0" }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
-<!-- Profit -->
-<div class="bg-slate-800 p-6 rounded-xl">
-<h3>Total Profit</h3>
-<p class="text-3xl text-green-400">
-₹{{ profile.total_profit_counter }}
-</p>
-</div>
+<!-- Chart.js Script -->
+<script>
+    const ctx = document.getElementById('profitChart').getContext('2d');
+    
+    // Sample data - replace with real data from backend
+    const profitData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+        datasets: [
+            {
+                label: 'Your Profit',
+                data: [10000, 15000, 12000, 25000, 35000, 45000, 50000, {{ profile.total_profit_counter|default:"50000" }}],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 7
+            }
+        ]
+    };
 
-<!-- Streak -->
-<div class="bg-slate-800 p-6 rounded-xl">
-<h3>Win Streak</h3>
-<p class="text-xl">{{ profile.win_streak }}</p>
-</div>
-
-</div>
-
-<!-- Leaderboard -->
-<div class="mt-10 bg-slate-800 p-6 rounded-xl">
-<h3 class="text-xl mb-4">Leaderboard</h3>
-
-{% for p in leaders %}
-<div class="flex justify-between border-b border-gray-700 py-2">
-<span>{{ p.user.username }}</span>
-<span>₹{{ p.total_profit_counter }}</span>
-</div>
-{% endfor %}
-
-</div>
-
-<a href="/create-room/" class="bg-green-600 px-8 py-4 rounded-xl inline-block mt-8">
-Start Game
-</a>
-
+    const profitChart = new Chart(ctx, {
+        type: 'line',
+        data: profitData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#d1d5db',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#d1d5db',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return '₹' + context.parsed.y.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(75, 85, 99, 0.2)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return '₹' + (value / 1000).toFixed(0) + 'K';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#9ca3af',
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

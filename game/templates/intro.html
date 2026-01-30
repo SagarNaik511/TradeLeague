@@ -1,32 +1,116 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TradeLeague</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-<div class="max-w-3xl mx-auto text-center space-y-6">
+    <style>
+        /* Moving grid background */
+        .grid-bg {
+            background-image:
+              linear-gradient(to right, rgba(59,130,246,0.15) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(59,130,246,0.15) 1px, transparent 1px);
+            background-size: 80px 80px;
+            animation: gridMove 20s linear infinite;
+        }
 
-<h1 class="text-4xl font-bold text-green-400">
-Gamified Trading League
-</h1>
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: 160px 160px; }
+        }
 
-<p class="text-xl">Learn Stock & Options Trading by Playing</p>
+        /* Animated chart waves */
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 3px;
+            left: -50%;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            opacity: 0.6;
+            animation: waveMove 10s linear infinite;
+        }
 
-<div class="bg-slate-800 p-6 rounded-xl space-y-4">
-  <p>📊 Analyze assets</p>
-  <p>⚔️ Compete with players</p>
-  <p>🏆 Climb leagues</p>
-  <p>🧠 AI performance feedback</p>
-</div>
+        .wave:nth-child(1) { top: 35%; animation-duration: 14s; }
+        .wave:nth-child(2) { top: 50%; animation-duration: 18s; opacity: 0.4; }
+        .wave:nth-child(3) { top: 65%; animation-duration: 22s; opacity: 0.3; }
 
-<div class="space-x-4">
-  <a href="/login/" class="bg-green-600 px-6 py-3 rounded-xl">
-    Login
-  </a>
+        @keyframes waveMove {
+            from { transform: translateX(-40%); }
+            to { transform: translateX(40%); }
+        }
 
-  <a href="/register/" class="bg-blue-600 px-6 py-3 rounded-xl">
-    Register
-  </a>
-</div>
+        /* Floating glow orbs */
+        .orb {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(59,130,246,0.35), transparent 70%);
+            animation: float 12s ease-in-out infinite;
+        }
 
-</div>
+        .orb.one { top: 10%; left: 15%; animation-delay: 0s; }
+        .orb.two { bottom: 15%; right: 10%; animation-delay: 4s; }
 
-{% endblock %}
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-40px); }
+        }
+    </style>
+</head>
 
+<body class="relative min-h-screen overflow-hidden bg-slate-950 text-white">
+
+    <!-- 🔵 Animated Background -->
+    <div class="absolute inset-0 grid-bg"></div>
+
+    <div class="absolute inset-0">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+
+    <!-- 🟦 Foreground Card -->
+    <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white/10 backdrop-blur-2xl border border-white/20
+                    rounded-3xl px-14 py-12 text-center shadow-[0_20px_80px_rgba(0,0,0,0.7)]
+                    max-w-xl w-full">
+
+            <h1 class="text-6xl font-extrabold mb-4">
+                <span class="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                    TradeLeague
+                </span>
+            </h1>
+
+            <p class="text-gray-300 text-lg mb-10">
+                Gamified Virtual Stock Trading League
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-5">
+                <a href="{% url 'login' %}"
+                   class="flex-1 bg-blue-600 hover:bg-blue-700
+                          py-4 rounded-xl font-bold text-lg
+                          transition transform hover:scale-105">
+                    Login
+                </a>
+
+                <a href="{% url 'register' %}"
+                   class="flex-1 border-2 border-blue-500 text-blue-400
+                          hover:bg-blue-600 hover:text-white
+                          py-4 rounded-xl font-bold text-lg
+                          transition transform hover:scale-105">
+                    Sign Up
+                </a>
+            </div>
+
+            <p class="text-gray-400 text-sm mt-8">
+                No real money. Real strategy. Real competition.
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

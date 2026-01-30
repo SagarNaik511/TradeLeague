@@ -1,0 +1,646 @@
+================================================================================
+                    TRADELEAGUE PROJECT DOCUMENTATION
+                 Gamified Virtual Trading League for Students
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+TradeLeague is a Django-based fintech application that gamifies stock market
+and options trading. Players compete in 1v1 trading matches, making strategic
+investment decisions based on market insights, with progression through four
+tier levels (NPC, VALID, MAIN CHARACTER, G.O.A.T).
+
+THEME: Stock Market & FinTech
+ID: CS06SF
+Current Date: January 30, 2026
+
+
+KEY FEATURES IMPLEMENTED
+================================================================================
+✓ User Authentication (Registration, Login, Logout)
+✓ Dashboard with stats and profit timeline chart
+✓ League ranking system (4 tiers)
+✓ Account balance tracking (₹100,000 initial)
+✓ Game lobby with room creation and joining
+✓ Waiting room with auto-refresh
+✓ Trading arena with asset selection
+✓ Investment form with amount input
+✓ Performance analysis after game
+✓ Leaderboard (Top 10 traders)
+✓ Responsive dark fintech UI with Tailwind CSS
+✓ Chart.js profit visualization
+
+
+TECH STACK
+================================================================================
+Backend:
+  - Django 5.0.14
+  - Django REST Framework
+  - SQLite3 Database
+  - Python 3.13
+
+Frontend:
+  - HTML5 / Django Templates
+  - Tailwind CSS (CDN)
+  - Chart.js (CDN)
+  - JavaScript (vanilla)
+
+Libraries:
+  - djangorestframework-simplejwt (JWT authentication)
+  - django-cors-headers (CORS support)
+
+
+DATABASE MODELS
+================================================================================
+
+1. USER (Django built-in)
+   - username
+   - password (hashed)
+   - email
+   - is_active
+   - date_joined
+
+2. PROFILE (OneToOne with User)
+   - user (FK -> User)
+   - total_profit_counter (Int) - Total earnings across all matches
+   - win_streak (Int) - Consecutive victories
+   - games_played (Int) - Total games played
+   - accuracy_score (Float) - Decision accuracy percentage
+   - league_level (CharField) - NPC, VALID, MAIN, GOAT
+   - account_balance (Float) - Current available balance (default: ₹100,000)
+
+   Methods:
+   - update_league() - Updates tier based on total_profit_counter
+
+3. ASSET
+   - name (CharField) - Asset name (e.g., SagarCorporation)
+   - base_price (Float) - Starting price in rupees
+   - growth_percent (Float) - Projected percentage growth
+   - info_news_text (TextField) - Market news/signals
+   - risk_level (CharField) - HIGH, MEDIUM, LOW
+   - sector (CharField) - Industry/sector
+
+4. GAMEROOM
+   - room_code (CharField) - Unique room identifier
+   - host (FK -> User) - Room creator
+   - opponent (FK -> User, nullable) - Second player
+   - status (CharField) - waiting, active, completed
+   - mode (CharField) - stock or options trading
+   - created (DateTime) - Room creation timestamp
+
+5. INVESTMENT
+   - room (FK -> GameRoom)
+   - player (FK -> User)
+   - asset (FK -> Asset)
+   - amount (Float) - Investment amount in rupees
+
+
+DJANGO FORMS
+================================================================================
+
+1. RegisterForm (ModelForm)
+   - Fields: username, password
+   - Uses: PasswordInput widget
+   - Model: User
+
+2. LoginForm (Form)
+   - Fields: username, password
+   - Uses: PasswordInput widget
+   - No model binding
+
+3. InvestmentForm (Form)
+   - Fields: amount (FloatField, min_value=1)
+   - Used for placing investments
+
+
+VIEWS - FRONTEND (Template-based)
+================================================================================
+
+1. intro(request)
+   - URL: /
+   - Template: intro.html
+   - Display: Landing page with game overview
+
+2. register_view(request)
+   - URL: /register/
+   - Template: register.html
+   - Method: POST - Creates user, sets password, redirects to login
+   - Form: RegisterForm
+
+3. login_view(request)
+   - URL: /login/
+   - Template: login.html
+   - Method: POST - Authenticates user and starts session
+   - Form: LoginForm
+
+4. logout_view(request)
+   - URL: /logout/
+   - Clears session and redirects to login
+
+5. dashboard(request) [LOGIN REQUIRED]
+   - URL: /dashboard/
+   - Template: dashboard.html
+   - Context: profile, leaders (top 10)
+   - Displays: Stats, leaderboard, profit chart, quick actions
+
+6. lobby(request) [LOGIN REQUIRED]
+   - URL: /lobby/
+   - Template: lobby.html
+   - Context: rooms (waiting rooms)
+   - Display: Available games to join
+
+7. create_room_view(request) [LOGIN REQUIRED]
+   - URL: /create-room/
+   - Creates new GameRoom with user as host
+   - Redirects to waiting room
+
+8. waiting_room(request, room_id) [LOGIN REQUIRED]
+   - URL: /waiting/<room_id>/
+   - Template: waiting.html
+   - Context: room
+   - Display: Room code, status, auto-refresh
+
+9. game_board(request, room_id) [LOGIN REQUIRED]
+   - URL: /game/<room_id>/
+   - Template: game_board.html
+   - Context: assets, room_id
+   - Display: Grid of tradable assets
+
+10. asset_detail(request, asset_id, room_id) [LOGIN REQUIRED]
+    - URL: /asset/<asset_id>/<room_id>/
+    - Template: asset_detail.html
+    - Context: asset, form, room_id
+    - Method: POST - Creates Investment record
+    - Form: InvestmentForm
+
+11. result_view(request, room_id) [LOGIN REQUIRED]
+    - URL: /result/<room_id>/
+    - Template: result.html
+    - Context: invs (investments), analysis
+    - Display: Game results and performance analysis
+
+
+FRONTEND TEMPLATES
+================================================================================
+
+All templates extend base.html with dark fintech theme
+
+1. base.html
+   - Master template with navbar, footer
+   - CDN: Tailwind CSS, Chart.js
+   - Custom colors: fintech-dark (#0f172a), fintech-darker (#0a0e27)
+   - Conditional navbar: logout for authenticated users
+   - Block: content, extra_css, extra_js
+
+2. intro.html
+   - Landing page hero card
+   - Project description and features list
+   - Login/Register buttons
+
+3. login.html
+   - Centered form card
+   - Username and password fields
+   - Error display
+   - Link to register
+
+4. register.html
+   - Similar to login
+   - Create account button
+   - Link to login page
+
+5. dashboard.html
+   - 4-column stats grid:
+     * Account Balance (₹) - Blue
+     * League Rank (NPC/VALID/MAIN/GOAT) - Color-coded
+     * Total Profit (₹) - Green
+     * Win Streak - Orange
+   - Profit timeline Chart.js line chart
+   - 2-column main layout:
+     * Left: Leaderboard (top traders)
+     * Right: Quick actions sidebar (start game, join lobby, stats)
+   - Sticky sidebar on desktop
+
+6. lobby.html
+   - Host Game card (create new room)
+   - Join Game card (shows available rooms count)
+   - Available Games grid (3-column):
+     * Room code (monospace, blue)
+     * Host username
+     * Game mode
+     * Status indicator
+     * Join button
+
+7. waiting.html
+   - Animated hourglass icon
+   - Large room code display with copy button
+   - Host/Opponent status section
+   - Instructions (numbered steps)
+   - Start Game button (enabled when opponent joins)
+   - Back to Lobby button
+   - Auto-refresh every 3 seconds
+
+8. game_board.html
+   - Header explaining asset selection
+   - 4-column asset grid (responsive):
+     * Asset name (blue, clickable)
+     * Sector badge
+     * Risk level (color-coded: red/yellow/green)
+     * Base price
+     * Projected growth percentage
+     * Click to trade CTA
+   - Hover effects (scale, border glow)
+
+9. asset_detail.html
+   - 2-column layout (3-column on desktop):
+     * Left (2 cols): Market signals + Asset details
+     * Right (1 col): Sticky investment form
+   - Market signals section (news text)
+   - Asset details grid:
+     * Base Price (green)
+     * Growth Forecast (up/down arrow)
+     * Sector
+     * Risk Level (color-coded)
+   - Investment form:
+     * Amount input field
+     * Info box (budget explanation)
+     * Submit button (green gradient)
+     * Skip link (back to board)
+
+10. result.html
+    - 2-column layout:
+      * Left (2 cols): Investment summary
+      * Right (1 col): Sticky analysis sidebar
+    - Investment cards showing:
+      * Trader username
+      * Asset name
+      * Amount invested
+      * Asset growth %
+    - Analysis section:
+      * Good decisions (green)
+      * Bad decisions (red)
+      * Diversification score /10 (blue)
+      * Risk behavior (yellow)
+      * Total gain/loss
+      * Smart feedback based on risk
+    - Action buttons: Back to Dashboard, Play Again
+
+
+URLS CONFIGURATION
+================================================================================
+
+Backend (fintech_backend/urls.py):
+  - / → root health check (JSON response)
+  - /admin/ → Django admin panel
+  - /api/ → game.urls (REST API)
+  - /api/token/ → JWT token obtain
+  - /api/token/refresh/ → JWT token refresh
+  - All above + frontend routes from game.urls_frontend
+
+Frontend Routes (game/urls_frontend.py):
+  - / → intro (home page)
+  - /login/ → login_view
+  - /register/ → register_view
+  - /logout/ → logout_view
+  - /dashboard/ → dashboard
+  - /lobby/ → lobby
+  - /create-room/ → create_room_view
+  - /waiting/<room_id>/ → waiting_room
+  - /game/<room_id>/ → game_board
+  - /asset/<asset_id>/<room_id>/ → asset_detail
+  - /result/<room_id>/ → result_view
+
+
+LEAGUE TIER SYSTEM
+================================================================================
+
+Based on total_profit_counter:
+
+1. NPC (0 - 50,000)
+   - Entry level
+   - Color: Gray
+   - Description: Beginner trader
+
+2. VALID (50,001 - 200,000)
+   - Intermediate
+   - Color: Blue
+   - Description: Demonstrates market understanding
+
+3. MAIN CHARACTER (200,001 - 1,000,000)
+   - Advanced
+   - Color: Purple
+   - Description: High-tier trader with consistent wins
+
+4. G.O.A.T (1,000,000+)
+   - Expert
+   - Color: Gold/Yellow
+   - Description: Greatest of all time
+
+
+RISK LEVELS & ASSET COLORS
+================================================================================
+
+Risk Level:
+  - HIGH → Red (#ef4444)
+  - MEDIUM/MED → Yellow (#eab308)
+  - LOW → Green (#10b981)
+
+Theme Colors:
+  - Primary Dark: #0f172a (fintech-dark)
+  - Secondary Dark: #0a0e27 (fintech-darker)
+  - Accent: #3b82f6 (blue)
+  - Success: #10b981 (green)
+  - Danger: #ef4444 (red)
+
+
+INSTALLATION & SETUP
+================================================================================
+
+1. Clone Repository:
+   git clone https://github.com/SagarNaik511/4Guys1Code.git
+   cd 4Guys1Code
+
+2. Create Virtual Environment:
+   python -m venv venv
+   venv\Scripts\activate  (Windows)
+   source venv/bin/activate  (Mac/Linux)
+
+3. Install Dependencies:
+   pip install -r requirements.txt
+
+4. Create Superuser:
+   python manage.py createsuperuser
+
+5. Create Migrations (if new):
+   python manage.py makemigrations
+   python manage.py migrate
+
+6. Seed Sample Assets (optional):
+   python manage.py seed_assets
+
+7. Run Server:
+   python manage.py runserver
+   Access: http://127.0.0.1:8000/
+
+
+API ENDPOINTS (REST)
+================================================================================
+
+Authentication:
+  POST /api/token/ - Get JWT token
+  POST /api/token/refresh/ - Refresh JWT token
+
+Game API:
+  GET /api/rooms/ - List all rooms
+  POST /api/rooms/ - Create room
+  GET /api/rooms/<id>/ - Get room details
+  GET /api/assets/ - List all assets
+  POST /api/investments/ - Create investment
+  GET /api/leaderboard/ - Top traders
+
+
+USER JOURNEY
+================================================================================
+
+1. Landing Page (intro.html)
+   ↓
+2. Register/Login (register.html / login.html)
+   ↓
+3. Dashboard (dashboard.html)
+   - View stats, profit chart, leaderboard
+   - Options: Start Game or Join Lobby
+   ↓
+4a. Create Room Path:
+   - Click "Start New Game"
+   - Waiting Room (waiting.html) - Auto-refresh
+   - Share room code with opponent
+   ↓
+4b. Join Room Path:
+   - Click "Join Lobby"
+   - Select available room
+   - Waiting Room (waiting.html)
+   ↓
+5. Trading Arena (game_board.html)
+   - View asset cards
+   - Click asset to view details
+   ↓
+6. Asset Detail (asset_detail.html)
+   - Read market signals
+   - Enter investment amount
+   - Submit investment
+   ↓
+7. Results (result.html)
+   - View investments made
+   - See performance analysis
+   - Back to dashboard or play again
+
+
+SECURITY FEATURES
+================================================================================
+
+✓ Django Security Middleware enabled
+✓ CSRF Protection on all forms
+✓ Password hashing (Django default)
+✓ Session authentication
+✓ Login required decorators on protected views
+✓ SQL injection prevention (ORM)
+✓ XSS protection (template auto-escaping)
+
+
+RESPONSIVE DESIGN
+================================================================================
+
+Breakpoints Used:
+  - Default (mobile): Full width
+  - md: (768px) - 2-3 columns
+  - lg: (1024px) - Full 3-4 column layout
+
+All templates are mobile-first responsive
+
+
+PERFORMANCE OPTIMIZATIONS
+================================================================================
+
+✓ CDN for Tailwind CSS and Chart.js
+✓ Database indexing on frequently queried fields
+✓ Session-based caching for leaderboard
+✓ Auto-refresh with 3-second interval in waiting room
+✓ Sticky sidebars to reduce scrolling
+
+
+FUTURE ENHANCEMENTS
+================================================================================
+
+1. WebSocket Integration
+   - Real-time opponent joins
+   - Live chat during matches
+   - Instant results broadcasting
+
+2. Machine Learning Module
+   - Player performance analysis
+   - Trading decision evaluation
+   - Personalized recommendations
+
+3. Mobile App
+   - React Native/Flutter implementation
+   - Push notifications
+
+4. Social Features
+   - Player profiles
+   - Friend connections
+   - Match history
+
+5. Advanced Trading
+   - Options trading support
+   - Margin trading
+   - Portfolio diversification metrics
+
+6. Admin Dashboard
+   - Asset management
+   - Player analytics
+   - Transaction history
+   - System monitoring
+
+
+TESTING CREDENTIALS (Development)
+================================================================================
+
+Admin Panel: http://127.0.0.1:8000/admin/
+  - Username: (created during setup)
+  - Password: (created during setup)
+
+Test User:
+  - Username: testuser
+  - Password: TestPass123
+
+
+TROUBLESHOOTING
+================================================================================
+
+Issue: "no such column: game_profile.account_balance"
+Solution: Run migrations
+  python manage.py makemigrations game
+  python manage.py migrate
+
+Issue: Profile not created for new user
+Solution: Ensure signals.py has post_save signal to create Profile
+  - Check game/signals.py
+  - Verify apps.py includes signals
+
+Issue: Static files not loading
+Solution: Collect static files
+  python manage.py collectstatic
+
+Issue: Template not found
+Solution: Verify TEMPLATES setting in settings.py
+  - APP_DIRS should be True
+  - game app should be in INSTALLED_APPS
+
+
+FILE STRUCTURE
+================================================================================
+
+4Guys1Code/
+├── fintech_backend/          # Main project folder
+│   ├── settings.py           # Django settings
+│   ├── urls.py               # Main URL routing
+│   ├── wsgi.py               # WSGI configuration
+│   └── asgi.py               # ASGI configuration
+├── game/                     # Main app
+│   ├── migrations/           # Database migrations
+│   ├── templates/            # HTML templates
+│   │   ├── base.html
+│   │   ├── intro.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── dashboard.html
+│   │   ├── lobby.html
+│   │   ├── waiting.html
+│   │   ├── game_board.html
+│   │   ├── asset_detail.html
+│   │   └── result.html
+│   ├── models.py             # Database models
+│   ├── views.py              # REST API views
+│   ├── views_frontend.py     # Template views
+│   ├── forms.py              # Django forms
+│   ├── urls.py               # API routing
+│   ├── urls_frontend.py      # Frontend routing
+│   ├── serializers.py        # DRF serializers
+│   ├── signals.py            # Django signals
+│   ├── analysis.py           # Game analysis logic
+│   ├── apps.py               # App configuration
+│   ├── admin.py              # Admin configuration
+│   └── consumers.py          # WebSocket consumers
+├── manage.py                 # Django management
+├── requirements.txt          # Python dependencies
+├── db.sqlite3                # SQLite database
+├── docker-compose.yml        # Docker configuration
+├── Dockerfile                # Docker image
+├── setup.bat / setup.sh      # Setup scripts
+└── README.md                 # Project README
+
+
+CURRENT STATUS
+================================================================================
+
+Development Phase: Feature Complete (MVP)
+  - Core trading functionality ✓
+  - User authentication ✓
+  - Game mechanics ✓
+  - Dashboard & UI ✓
+  - Database schema ✓
+  - Frontend templates ✓
+  - Forms validation ✓
+  - League system ✓
+  - Account balance tracking ✓
+
+Remaining (Post-MVP):
+  - WebSocket real-time features
+  - ML analysis engine
+  - Admin dashboard
+  - Email notifications
+  - Advanced analytics
+
+
+DEPLOYMENT CHECKLIST
+================================================================================
+
+Before Production:
+  ☐ Set DEBUG = False in settings.py
+  ☐ Set SECRET_KEY to environment variable
+  ☐ Configure ALLOWED_HOSTS
+  ☐ Set up CORS properly
+  ☐ Use HTTPS only
+  ☐ Set up proper database (PostgreSQL)
+  ☐ Collect static files
+  ☐ Configure email backend
+  ☐ Set up logging
+  ☐ Run security checks: python manage.py check --deploy
+
+
+DEPENDENCIES
+================================================================================
+
+See requirements.txt for full list
+
+Key Packages:
+  - Django==5.0.14
+  - djangorestframework
+  - djangorestframework-simplejwt
+  - django-cors-headers
+  - python-decouple
+  - Pillow (for image handling)
+
+
+CONTACT & SUPPORT
+================================================================================
+
+Repository: https://github.com/SagarNaik511/4Guys1Code
+Issue Tracking: GitHub Issues
+Documentation: See README.md and INTEGRATION_GUIDE.md
+
+
+================================================================================
+Document Generated: January 30, 2026
+Last Updated: January 30, 2026
+Version: 1.0 (MVP)
+================================================================================
