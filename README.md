@@ -12,10 +12,19 @@ Progression and Leagues
 A player's journey is defined by their total profit. As the portfolio grows, the player advances through four distinct tiers. This ranking system is designed to provide a sense of status and achievement within the student community.
 
 ## Rank Profit Threshold Status Description
-Level 1: NPC 0 to 50,000 The entry point for beginners.
-Level 2: Valid 50,001 to 200,000 Demonstrates a basic understanding of market trends.
-Level 3: Main Character 200,001 to 1,000,000 A high-tier trader with consistent wins.
-Level 4: G.O.A.T 1,000,000+ Greatest
+
+- **Level 1: NPC** — 0 to 50,000  
+  The entry point for beginners.
+
+- **Level 2: Valid** — 50,001 to 200,000  
+  Demonstrates a basic understanding of market trends.
+
+- **Level 3: Main Character** — 200,001 to 1,000,000  
+  A high-tier trader with consistent wins.
+
+- **Level 4: G.O.A.T** — 1,000,000+  
+  Greatest of all time.
+
 
 ## Game Mechanics
 Onboarding and Dashboard
