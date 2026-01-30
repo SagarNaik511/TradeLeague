@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl mb-8">Choose Assets</h2>
+
+<div class="grid grid-cols-4 gap-6">
+
+{% for a in assets %}
+<a href="/asset/{{a.id}}/{{room_id}}/">
+
+<div class="bg-slate-800 p-6 rounded-xl hover:scale-105 transition">
+
+<h3 class="text-xl text-green-400 mb-2">
+{{ a.name }}
+</h3>
+
+<p>Sector: {{ a.sector }}</p>
+
+<p class="
+  {% if a.risk_level == 'HIGH' %}
+    text-red-400
+  {% elif a.risk_level == 'MED' %}
+    text-yellow-400
+  {% else %}
+    text-green-400
+  {% endif %}
+">
+Risk: {{ a.risk_level }}
+</p>
+
+<p class="text-sm mt-2 text-gray-400">
+Click to trade →
+</p>
+
+</div>
+</a>
+{% endfor %}
+
+</div>
+
+{% endblock %}

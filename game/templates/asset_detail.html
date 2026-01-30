@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl mb-6">{{ asset.name }}</h2>
+
+<div class="grid grid-cols-2 gap-8">
+
+<!-- Info -->
+<div class="bg-slate-800 p-6 rounded-xl">
+
+<h3 class="text-xl text-green-400 mb-4">Market Signals</h3>
+
+<p>{{ asset.info_news_text }}</p>
+
+<p class="mt-4">Sector: {{ asset.sector }}</p>
+<p>Risk: {{ asset.risk_level }}</p>
+
+</div>
+
+<!-- Invest -->
+<div class="bg-slate-800 p-6 rounded-xl">
+
+<h3 class="text-xl mb-4">Invest</h3>
+
+<form method="post">
+{% csrf_token %}
+{{ form.as_p }}
+
+<button class="bg-green-600 px-6 py-3 rounded-xl mt-4 w-full">
+Submit Investment
+</button>
+</form>
+
+<a href="/game/{{room_id}}/" class="block mt-4 text-blue-400">
+← Back
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl mb-6">Detailed Analysis</h2>
+
+<div class="bg-slate-800 p-8 rounded-xl">
+
+<ul class="space-y-3">
+<li>✔ Strong picks: {{ analysis.good_decisions }}</li>
+<li>✖ Weak picks: {{ analysis.bad_decisions }}</li>
+<li>📊 Diversification Score: {{ analysis.diversification_score }}</li>
+<li>⚠ Risk Level: {{ analysis.risk_behavior }}</li>
+</ul>
+
+</div>
+
+{% endblock %}

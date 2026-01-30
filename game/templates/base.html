@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trading League Game</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen">
+
+<!-- NAV -->
+<nav class="bg-black p-4 flex justify-between items-center">
+  <div class="text-xl font-bold text-green-400">
+    📈 Trading League
+  </div>
+
+  {% if user.is_authenticated %}
+    <div class="space-x-4">
+      <a href="/dashboard/" class="text-gray-300 hover:text-white">Dashboard</a>
+      <a href="/lobby/" class="text-gray-300 hover:text-white">Lobby</a>
+      <a href="/logout/" class="text-red-400">Logout</a>
+    </div>
+  {% endif %}
+</nav>
+
+<!-- PAGE CONTENT -->
+<div class="p-8">
+  {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl mb-8 text-green-400">Game Result</h2>
+
+<div class="space-y-4">
+
+{% for i in invs %}
+<div class="bg-slate-800 p-4 rounded-xl flex justify-between">
+<span>{{ i.player.username }}</span>
+<span>{{ i.asset.name }}</span>
+<span>₹{{ i.amount }}</span>
+</div>
+{% endfor %}
+
+</div>
+
+<div class="bg-slate-800 p-6 rounded-xl mt-8">
+
+<h3 class="text-xl mb-4">Performance Analysis</h3>
+
+<p>Good decisions: {{ analysis.good_decisions }}</p>
+<p>Bad decisions: {{ analysis.bad_decisions }}</p>
+<p>Diversification: {{ analysis.diversification_score }}</p>
+<p>Risk behavior: {{ analysis.risk_behavior }}</p>
+
+</div>
+
+<a href="/dashboard/" class="bg-blue-600 px-6 py-3 rounded-xl mt-6 inline-block">
+Back to Dashboard
+</a>
+
+{% endblock %}

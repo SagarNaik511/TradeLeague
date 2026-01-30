@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="text-3xl mb-8">Dashboard</h2>
+
+<div class="grid grid-cols-3 gap-6">
+
+<!-- League -->
+<div class="bg-slate-800 p-6 rounded-xl">
+<h3>League</h3>
+<p class="text-2xl text-yellow-400">
+{{ profile.league_level }}
+</p>
+</div>
+
+<!-- Profit -->
+<div class="bg-slate-800 p-6 rounded-xl">
+<h3>Total Profit</h3>
+<p class="text-3xl text-green-400">
+₹{{ profile.total_profit_counter }}
+</p>
+</div>
+
+<!-- Streak -->
+<div class="bg-slate-800 p-6 rounded-xl">
+<h3>Win Streak</h3>
+<p class="text-xl">{{ profile.win_streak }}</p>
+</div>
+
+</div>
+
+<!-- Leaderboard -->
+<div class="mt-10 bg-slate-800 p-6 rounded-xl">
+<h3 class="text-xl mb-4">Leaderboard</h3>
+
+{% for p in leaders %}
+<div class="flex justify-between border-b border-gray-700 py-2">
+<span>{{ p.user.username }}</span>
+<span>₹{{ p.total_profit_counter }}</span>
+</div>
+{% endfor %}
+
+</div>
+
+<a href="/create-room/" class="bg-green-600 px-8 py-4 rounded-xl inline-block mt-8">
+Start Game
+</a>
+
+{% endblock %}
