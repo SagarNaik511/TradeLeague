@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import timedelta
 
 from .forms import *
 from .models import *
@@ -22,7 +24,7 @@ def register_view(request):
     if form.is_valid():
         user = form.save(commit=False)
         user.set_password(form.cleaned_data["password"])
-        user.save()
+        user.save()  # profile created via signal
         return redirect("login")
     return render(request, "register.html", {"form": form})
 
@@ -30,12 +32,12 @@ def register_view(request):
 def login_view(request):
     form = LoginForm(request.POST or None)
     if form.is_valid():
-        u = authenticate(
+        user = authenticate(
             username=form.cleaned_data["username"],
             password=form.cleaned_data["password"]
         )
-        if u:
-            login(request, u)
+        if user:
+            login(request, user)
             return redirect("dashboard")
     return render(request, "login.html", {"form": form})
 
@@ -66,54 +68,79 @@ def lobby(request):
     return render(request, "lobby.html", {"rooms": rooms})
 
 
+# ---------- CREATE ROOM ----------
+
 @login_required
 def create_room_view(request):
-    room = GameRoom.objects.create(host=request.user)
-    return redirect("waiting", room.id)
+    active = request.user.profile.active_room
 
+    # 🔒 SAFETY: only block if still active
+    if active and active.status == "active":
+        return redirect("game_board", active.id)
+    else:
+        request.user.profile.active_room = None
+        request.user.profile.save()
+
+    if request.method == "POST":
+        duration = int(request.POST.get("trade_duration", 5))
+        room = GameRoom.objects.create(
+            host=request.user,
+            trade_duration=duration,
+            status="waiting"
+        )
+        return redirect("waiting", room.id)
+
+    return render(request, "create_room.html")
+
+
+# ---------- WAITING ROOM ----------
 
 @login_required
 def waiting_room(request, room_id):
     room = get_object_or_404(GameRoom, id=room_id)
 
-    # If game already started
+    # 🔒 Only players of this room
+    if request.user not in [room.host, room.opponent]:
+        return redirect("lobby")
+
+    # Already active → move both players
     if room.status == "active":
         return redirect("game_board", room.id)
 
-    # HOST starts the game
-    if request.method == "POST" and request.user == room.host and room.opponent:
+    # 🚀 HOST starts game
+    if (
+        request.method == "POST"
+        and request.user == room.host
+        and room.opponent
+        and room.status == "waiting"
+    ):
         room.status = "active"
+        room.started_at = timezone.now()
+        room.settled = False
         room.save()
+
+        # 🔥 Set active_room
+        for user in [room.host, room.opponent]:
+            user.profile.active_room = room
+            user.profile.save()
+
         return redirect("game_board", room.id)
 
     return render(request, "waiting.html", {"room": room})
-
-
-# ---------- GAME BOARD ----------
-
-@login_required
-def game_board(request, room_id):
-    room = get_object_or_404(GameRoom, id=room_id)
-
-    # 🔥 Auto-redirect BOTH players when game ends
-    if room.status == "completed":
-        return redirect("result", room.id)
-
-    if room.status != "active":
-        return redirect("waiting", room.id)
-
-    assets = Asset.objects.all()
-
-    return render(request, "game_board.html", {
-        "assets": assets,
-        "room": room
-    })
 
 
 # ---------- JOIN ROOM ----------
 
 @login_required
 def join_room_view(request, room_id):
+    active = request.user.profile.active_room
+
+    if active and active.status == "active":
+        return redirect("game_board", active.id)
+    else:
+        request.user.profile.active_room = None
+        request.user.profile.save()
+
     room = get_object_or_404(GameRoom, id=room_id)
 
     if room.host == request.user:
@@ -124,6 +151,41 @@ def join_room_view(request, room_id):
         room.save()
 
     return redirect("waiting", room.id)
+
+
+# ---------- GAME BOARD ----------
+
+@login_required
+def game_board(request, room_id):
+    room = get_object_or_404(GameRoom, id=room_id)
+
+    # Completed → result
+    if room.status == "completed":
+        return redirect("result", room.id)
+
+    # ⏱ TIMER LOGIC
+    end_time = room.started_at + timedelta(minutes=room.trade_duration)
+
+    if timezone.now() >= end_time:
+        room.status = "completed"
+        room.save()
+
+        # 🔥 CLEAR ACTIVE ROOM FOR BOTH
+        for user in [room.host, room.opponent]:
+            if user:
+                user.profile.active_room = None
+                user.profile.save()
+
+        return redirect("result", room.id)
+
+    assets = Asset.objects.all()
+    remaining_seconds = int((end_time - timezone.now()).total_seconds())
+
+    return render(request, "game_board.html", {
+        "room": room,
+        "assets": assets,
+        "remaining_seconds": remaining_seconds
+    })
 
 
 # ---------- ASSET DETAIL ----------
@@ -159,30 +221,48 @@ def asset_detail(request, asset_id, room_id):
 @login_required
 def result_view(request, room_id):
     room = get_object_or_404(GameRoom, id=room_id)
-
-    # ✅ End game + update profit ONLY ONCE
-    if request.method == "POST" and request.user == room.host and room.status == "active":
-        room.status = "completed"
-        room.save()
-
-        invs = Investment.objects.filter(room=room)
-        analysis = analyze(invs)
-
-        # 🔥 Update profiles (PROFIT ONLY)
-        for inv in invs:
-            profile = inv.player.profile
-            profit = analysis.get(inv.player.id, 0)
-
-            profile.total_profit_counter += profit
-            profile.account_balance = profile.total_profit_counter
-            profile.games_played += 1
-            profile.save()
-
     invs = Investment.objects.filter(room=room)
     analysis = analyze(invs)
+
+    # 🔁 Already settled → just show
+    if room.settled:
+        return render(request, "result.html", {
+            "room": room,
+            "invs": invs,
+            "analysis": analysis
+        })
+
+    # 🏁 HOST OR TIMER SETTLES GAME
+    for user in [room.host, room.opponent]:
+        profile = user.profile
+        net_profit = analysis["profit_map"].get(user.id, 0)
+
+        profile.account_balance += net_profit
+        profile.total_profit_counter += net_profit
+        profile.games_played += 1
+
+        if net_profit > 0:
+            profile.win_streak += 1
+        else:
+            profile.win_streak = 0
+
+        profile.active_room = None
+        profile.save()
+
+    room.status = "completed"
+    room.settled = True
+    room.save()
 
     return render(request, "result.html", {
         "room": room,
         "invs": invs,
         "analysis": analysis
     })
+
+
+# ---------- MARKET ----------
+
+@login_required
+def market_view(request):
+    assets = Asset.objects.all()
+    return render(request, "market.html", {"assets": assets})

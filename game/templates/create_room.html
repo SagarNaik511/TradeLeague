@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Create Room{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-20 bg-fintech-darker p-8 rounded-2xl border border-gray-700">
+    <h1 class="text-3xl font-bold text-white mb-6">Create Game Room</h1>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <label class="block text-gray-300 font-semibold">
+            Trade Duration (minutes)
+        </label>
+
+        <select name="trade_duration"
+                class="w-full bg-fintech-dark border border-gray-600 text-white rounded-lg p-3">
+            <option value="5">5 Minutes</option>
+            <option value="10">10 Minutes</option>
+            <option value="15">15 Minutes</option>
+        </select>
+
+        <button type="submit"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg">
+            Create Room
+        </button>
+    </form>
+</div>
+{% endblock %}

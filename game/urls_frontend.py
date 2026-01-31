@@ -9,8 +9,10 @@ urlpatterns = [
     path("dashboard/", v.dashboard, name="dashboard"),
     path("lobby/", v.lobby, name="lobby"),
     path("create-room/", v.create_room_view, name="create_room"),
+    path("join-room/<int:room_id>/", v.join_room_view, name="join_room"),
     path("waiting/<int:room_id>/", v.waiting_room, name="waiting"),
     path("game/<int:room_id>/", v.game_board, name="game_board"),
     path("asset/<int:asset_id>/<int:room_id>/", v.asset_detail, name="asset_detail"),
     path("result/<int:room_id>/", v.result_view, name="result"),
+    path("market/", v.market_view, name="market"),
 ]

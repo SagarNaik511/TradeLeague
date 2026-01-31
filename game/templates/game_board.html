@@ -4,103 +4,131 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
-    
-    <!-- Header Section -->
-    <div class="mb-12">
-        <h1 class="text-4xl font-bold text-white mb-2">Select Assets to Trade</h1>
-        <p class="text-gray-400">Click on an asset to view details and place your investment</p>
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
+        <div>
+            <h1 class="text-4xl font-bold text-white mb-2">Trading Arena</h1>
+            <p class="text-gray-400">
+                Choose assets and place investments before the timer ends
+            </p>
+        </div>
+
+        <!-- ⏱️ TIMER -->
+        <div class="mt-6 md:mt-0 bg-fintech-darker border border-blue-700/40 rounded-xl px-6 py-4 text-center">
+            <p class="text-gray-400 text-sm mb-1">Time Remaining</p>
+            <p id="trade-timer" class="text-3xl font-bold text-blue-400">
+                --:--
+            </p>
+        </div>
     </div>
 
     <!-- Assets Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {% for asset in assets %}
-            <a href="{% url 'asset_detail' asset.id room.id %}" class="group">
-                <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-6 shadow-lg hover:border-blue-500 hover:shadow-blue-500/20 transition transform hover:scale-105 h-full cursor-pointer">
-                    
-                    <!-- Asset Name -->
-                    <h3 class="text-xl font-bold text-blue-400 mb-4 group-hover:text-blue-300 transition">
-                        {{ asset.name }}
-                    </h3>
+        <a href="{% url 'asset_detail' asset.id room.id %}" class="group">
+            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-6 shadow-lg
+                        hover:border-blue-500 hover:shadow-blue-500/20
+                        transition transform hover:scale-105 h-full">
 
-                    <!-- Sector Badge -->
-                    <div class="mb-4">
-                        <span class="inline-block bg-blue-900/30 border border-blue-700/50 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full">
-                            📊 {{ asset.sector }}
-                        </span>
-                    </div>
+                <!-- Asset Name -->
+                <h3 class="text-xl font-bold text-blue-400 mb-3 group-hover:text-blue-300">
+                    {{ asset.name }}
+                </h3>
 
-                    <!-- Risk Level -->
-                    <div class="mb-4">
-                        <p class="text-gray-400 text-xs font-semibold uppercase mb-2">Risk Level</p>
-                        <div class="flex items-center space-x-2">
-                            {% if asset.risk_level == 'HIGH' %}
-                                <span class="inline-block w-3 h-3 bg-red-500 rounded-full"></span>
-                                <span class="text-red-400 font-bold">{{ asset.risk_level }}</span>
-                            {% elif asset.risk_level == 'MEDIUM' or asset.risk_level == 'MED' %}
-                                <span class="inline-block w-3 h-3 bg-yellow-500 rounded-full"></span>
-                                <span class="text-yellow-400 font-bold">{{ asset.risk_level }}</span>
-                            {% else %}
-                                <span class="inline-block w-3 h-3 bg-green-500 rounded-full"></span>
-                                <span class="text-green-400 font-bold">{{ asset.risk_level }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
+                <!-- Sector -->
+                <span class="inline-block mb-4 bg-blue-900/30 border border-blue-700/50
+                             text-blue-300 text-xs font-semibold px-3 py-1 rounded-full">
+                    {{ asset.sector }}
+                </span>
 
-                    <!-- Price Info -->
-                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 mb-4">
-                        <p class="text-gray-500 text-xs font-semibold uppercase mb-1">Base Price</p>
-                        <p class="text-green-400 font-bold text-lg">₹{{ asset.base_price }}</p>
-                    </div>
-
-                    <!-- Growth Indicator -->
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-semibold uppercase">Projected Growth</p>
-                            {% if asset.growth_percent > 0 %}
-                                <p class="text-green-400 font-bold">
-                                    ↑ {{ asset.growth_percent|floatformat:1 }}%
-                                </p>
-                            {% elif asset.growth_percent < 0 %}
-                                <p class="text-red-400 font-bold">
-                                    ↓ {{ asset.growth_percent|floatformat:1 }}%
-                                </p>
-                            {% else %}
-                                <p class="text-gray-400 font-bold">
-                                    → 0%
-                                </p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Click to Trade CTA -->
-                    <div class="mt-6 pt-4 border-t border-gray-700">
-                        <p class="text-gray-400 text-sm text-center group-hover:text-blue-400 transition">
-                            Click to view & trade →
-                        </p>
-                    </div>
-
+                <!-- Risk -->
+                <div class="mb-4">
+                    <p class="text-gray-400 text-xs uppercase mb-1">Risk</p>
+                    {% if asset.risk_level == "HIGH" %}
+                        <span class="text-red-400 font-bold">HIGH</span>
+                    {% elif asset.risk_level == "MEDIUM" or asset.risk_level == "MED" %}
+                        <span class="text-yellow-400 font-bold">MEDIUM</span>
+                    {% else %}
+                        <span class="text-green-400 font-bold">LOW</span>
+                    {% endif %}
                 </div>
-            </a>
-        {% empty %}
-            <!-- No Assets State -->
-            <div class="col-span-full text-center py-16">
-                <div class="text-6xl mb-4">📉</div>
-                <h2 class="text-2xl font-bold text-white mb-2">No Assets Available</h2>
-                <p class="text-gray-400">Check back later for available trading opportunities</p>
+
+                <!-- Price -->
+                <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 mb-4">
+                    <p class="text-gray-500 text-xs uppercase">Base Price</p>
+                    <p class="text-green-400 font-bold text-lg">₹{{ asset.base_price }}</p>
+                </div>
+
+                <!-- Growth -->
+                <div>
+                    <p class="text-gray-500 text-xs uppercase mb-1">Projected Growth</p>
+                    {% if asset.growth_percent > 0 %}
+                        <p class="text-green-400 font-bold">
+                            ↑ {{ asset.growth_percent|floatformat:1 }}%
+                        </p>
+                    {% elif asset.growth_percent < 0 %}
+                        <p class="text-red-400 font-bold">
+                            ↓ {{ asset.growth_percent|floatformat:1 }}%
+                        </p>
+                    {% else %}
+                        <p class="text-gray-400 font-bold">0%</p>
+                    {% endif %}
+                </div>
+
+                <div class="mt-5 pt-3 border-t border-gray-700 text-center">
+                    <span class="text-sm text-gray-400 group-hover:text-blue-400">
+                        Click to invest →
+                    </span>
+                </div>
             </div>
+        </a>
+        {% empty %}
+        <div class="col-span-full text-center py-20">
+            <h2 class="text-2xl text-gray-400">No assets available</h2>
+        </div>
         {% endfor %}
     </div>
 
+    <!-- HOST ONLY: END GAME -->
+    {% if user == room.host %}
+    <form method="post" action="{% url 'result' room.id %}" class="mt-12 text-center">
+        {% csrf_token %}
+        <button class="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-xl">
+            End Game & View Results
+        </button>
+    </form>
+    {% endif %}
+
 </div>
 
-{% if user == room.host %}
-<form method="post" action="{% url 'result' room.id %}">
-    {% csrf_token %}
-    <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg">
-        End Game & View Results
-    </button>
-</form>
-{% endif %}
- 
-{% endblock %}
+<!-- ⏱️ TIMER SCRIPT -->
+<script>
+    const startedAt = new Date("{{ room.started_at|date:'c' }}").getTime();
+    const durationMinutes = {{ room.trade_duration }};
+    const endTime = startedAt + durationMinutes * 60 * 1000;
 
+    const timerEl = document.getElementById("trade-timer");
+
+    function updateTimer() {
+        const now = new Date().getTime();
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+            timerEl.innerText = "00:00";
+            window.location.href = "{% url 'result' room.id %}";
+            return;
+        }
+
+        const mins = Math.floor(diff / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        timerEl.innerText =
+            String(mins).padStart(2, "0") + ":" +
+            String(secs).padStart(2, "0");
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+</script>
+{% endblock %}

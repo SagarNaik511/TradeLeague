@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{% block title %}TradeLeague{% endblock %}</title>
-    
-    <!-- Tailwind CSS CDN -->
+
+    <!-- Tailwind CSS (CDN – OK for dev) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -25,77 +26,76 @@
         }
     </script>
 
-    <!-- Chart.js CDN -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        body {
-            @apply bg-fintech-dark text-gray-100;
-        }
-    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-fintech-dark text-gray-100">
-    <!-- Navbar -->
-    <nav class="bg-fintech-darker border-b border-gray-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo / Project Name -->
-                <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
-                        <span class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                            TradeLeague
-                        </span>
-                    </a>
-                </div>
 
-                <!-- Nav Links -->
-                <div class="hidden md:flex items-center space-x-6">
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard' %}" class="text-gray-300 hover:text-blue-400 transition">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'lobby' %}" class="text-gray-300 hover:text-blue-400 transition">
-                            Lobby
-                        </a>
-                        <span class="text-gray-400">{{ user.username }}</span>
-                    {% endif %}
-                </div>
+<body class="bg-fintech-dark text-gray-100 antialiased">
 
-                <!-- Logout Button -->
-                <div class="flex items-center space-x-4">
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'logout' %}" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
-                            Logout
-                        </a>
-                    {% else %}
-                        <a href="{% url 'login' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">
-                            Login
-                        </a>
-                        <a href="{% url 'register' %}" class="px-4 py-2 border border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition font-medium">
-                            Register
-                        </a>
-                    {% endif %}
-                </div>
+{% if user.is_authenticated %}
+<!-- ================= NAVBAR ================= -->
+<nav class="bg-fintech-darker border-b border-gray-700 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="{% url 'dashboard' %}"
+                   class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                    TradeLeague
+                </a>
             </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="min-h-screen">
-        {% block content %}{% endblock %}
-    </main>
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="{% url 'dashboard' %}"
+                   class="text-gray-300 hover:text-blue-400 transition">
+                    Dashboard
+                </a>
 
-    <!-- Footer -->
-    <footer class="bg-fintech-darker border-t border-gray-700 mt-12 py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center text-gray-400 text-sm">
-                <p>&copy; 2026 TradeLeague. Gamified Virtual Trading for Students.</p>
+                <a href="{% url 'lobby' %}"
+                   class="text-gray-300 hover:text-blue-400 transition">
+                    Lobby
+                </a>
+
+                <a href="{% url 'market' %}"
+                   class="text-gray-300 hover:text-blue-400 transition">
+                    Market
+                </a>
+
+                <span class="text-gray-500 text-sm">
+                    👤 {{ user.username }}
+                </span>
             </div>
-        </div>
-    </footer>
 
-    {% block extra_js %}{% endblock %}
+            <!-- Logout -->
+            <div>
+                <a href="{% url 'logout' %}"
+                   class="px-4 py-2 bg-red-600 hover:bg-red-700
+                          text-white rounded-lg transition font-medium">
+                    Logout
+                </a>
+            </div>
+
+        </div>
+    </div>
+</nav>
+{% endif %}
+
+<!-- ================= MAIN ================= -->
+<main class="min-h-[calc(100vh-64px)]">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-fintech-darker border-t border-gray-700 mt-12 py-6">
+    <div class="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
+        © 2026 TradeLeague • Gamified Virtual Trading for Students
+    </div>
+</footer>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>
