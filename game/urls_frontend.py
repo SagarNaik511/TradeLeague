@@ -15,4 +15,6 @@ urlpatterns = [
     path("asset/<int:asset_id>/<int:room_id>/", v.asset_detail, name="asset_detail"),
     path("result/<int:room_id>/", v.result_view, name="result"),
     path("market/", v.market_view, name="market"),
+    path("how-to-play/", v.how_to_play, name="how_to_play"),
+
 ]

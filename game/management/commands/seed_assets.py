@@ -11,7 +11,7 @@ class Command(BaseCommand):
             return
 
         assets = [
-            # ✅ EXISTING ASSETS (UNCHANGED)
+            
             Asset(
                 name="Reliance Industries",
                 base_price=2500,

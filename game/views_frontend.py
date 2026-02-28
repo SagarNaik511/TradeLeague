@@ -3,11 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
-
 from .forms import *
 from .models import *
 from .analysis import analyze
-
 
 # ---------- INTRO ----------
 
@@ -58,7 +56,10 @@ def dashboard(request):
         "profile": profile,
         "leaders": leaders
     })
-
+    
+@login_required
+def how_to_play(request):
+    return render(request, "how_to_play.html") 
 
 # ---------- LOBBY ----------
 
@@ -99,15 +100,19 @@ def create_room_view(request):
 def waiting_room(request, room_id):
     room = get_object_or_404(GameRoom, id=room_id)
 
-    # 🔒 Only players of this room
+    # Only players of this room
     if request.user not in [room.host, room.opponent]:
         return redirect("lobby")
 
-    # Already active → move both players
+    # Allow HOST to enter game board even if opponent not joined
+    if request.user == room.host:
+        return redirect("game_board", room.id)
+
+    # If game already active, redirect opponent too
     if room.status == "active":
         return redirect("game_board", room.id)
 
-    # 🚀 HOST starts game
+    # HOST starts game (real match)
     if (
         request.method == "POST"
         and request.user == room.host
@@ -119,7 +124,7 @@ def waiting_room(request, room_id):
         room.settled = False
         room.save()
 
-        # 🔥 Set active_room
+        # Set active_room for both players
         for user in [room.host, room.opponent]:
             user.profile.active_room = room
             user.profile.save()
@@ -158,32 +163,37 @@ def join_room_view(request, room_id):
 @login_required
 def game_board(request, room_id):
     room = get_object_or_404(GameRoom, id=room_id)
+    profile = request.user.profile
 
-    # Completed → result
+    # If game finished
     if room.status == "completed":
         return redirect("result", room.id)
 
-    # ⏱ TIMER LOGIC
+    assets = Asset.objects.all()
+
+    # PRACTICE / PREVIEW MODE (no opponent, not started)
+    if room.started_at is None:
+        return render(request, "game_board.html", {
+            "room": room,
+            "assets": assets,
+            "profile": profile,
+            "remaining_seconds": None  # no timer
+        })
+
+    # REAL GAME TIMER
     end_time = room.started_at + timedelta(minutes=room.trade_duration)
 
     if timezone.now() >= end_time:
-        room.status = "completed"
+        room.status = "settling"
         room.save()
-
-        # 🔥 CLEAR ACTIVE ROOM FOR BOTH
-        for user in [room.host, room.opponent]:
-            if user:
-                user.profile.active_room = None
-                user.profile.save()
-
         return redirect("result", room.id)
 
-    assets = Asset.objects.all()
     remaining_seconds = int((end_time - timezone.now()).total_seconds())
 
     return render(request, "game_board.html", {
         "room": room,
         "assets": assets,
+        "profile": profile,
         "remaining_seconds": remaining_seconds
     })
 
@@ -193,27 +203,40 @@ def game_board(request, room_id):
 @login_required
 def asset_detail(request, asset_id, room_id):
     room = get_object_or_404(GameRoom, id=room_id)
-
-    if room.status != "active":
-        return redirect("waiting", room.id)
-
     asset = get_object_or_404(Asset, id=asset_id)
+
     form = InvestmentForm(request.POST or None)
 
-    if form.is_valid():
-        Investment.objects.create(
-            room=room,
-            player=request.user,
-            asset=asset,
-            amount=form.cleaned_data["amount"]
-        )
+    profile = request.user.profile
+
+    # Block investing if game not active
+    if request.method == "POST" and room.status != "active":
         return redirect("game_board", room.id)
+
+    # Allow viewing asset anytime
+    if form.is_valid():
+        amount = form.cleaned_data["amount"]
+        # Enforce balance check
+        if amount > profile.account_balance:
+            form.add_error("amount", f"Insufficient funds! You have ₹{profile.account_balance:,.0f}")
+        else:
+            Investment.objects.create(
+                room=room,
+                player=request.user,
+                asset=asset,
+                amount=amount
+            )
+            profile.account_balance -= amount
+            profile.save()
+            return redirect("game_board", room.id)
 
     return render(request, "asset_detail.html", {
         "asset": asset,
         "form": form,
-        "room": room
+        "room": room,
+        "profile": profile,
     })
+
 
 
 # ---------- RESULT ----------
@@ -224,7 +247,7 @@ def result_view(request, room_id):
     invs = Investment.objects.filter(room=room)
     analysis = analyze(invs)
 
-    # 🔁 Already settled → just show
+    # Already settled → just show
     if room.settled:
         return render(request, "result.html", {
             "room": room,
@@ -232,12 +255,18 @@ def result_view(request, room_id):
             "analysis": analysis
         })
 
-    # 🏁 HOST OR TIMER SETTLES GAME
+    # HOST OR TIMER SETTLES GAME
     for user in [room.host, room.opponent]:
+        if user is None:          
+            continue
+
         profile = user.profile
         net_profit = analysis["profit_map"].get(user.id, 0)
 
-        profile.account_balance += net_profit
+        # Return invested amount + profit/loss
+        user_invested = sum(inv.amount for inv in invs if inv.player == user)
+        profile.account_balance += user_invested + net_profit
+
         profile.total_profit_counter += net_profit
         profile.games_played += 1
 

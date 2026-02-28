@@ -2,149 +2,258 @@
 
 {% block title %}{{ asset.name }} - TradeLeague{% endblock %}
 
+{% block extra_css %}
+<style>
+    .risk-gauge { position: relative; width: 120px; height: 60px; overflow: hidden; }
+    .risk-gauge-bg { width: 120px; height: 60px; border-radius: 60px 60px 0 0; background: conic-gradient(from 0.75turn, #00ff88 0%, #ffd700 50%, #ff005c 100%); }
+    .risk-gauge-mask { position: absolute; bottom: 0; left: 10px; width: 100px; height: 50px; border-radius: 50px 50px 0 0; background: #0a0a0f; }
+    .risk-needle { position: absolute; bottom: 2px; left: 50%; width: 2px; height: 44px; background: white; transform-origin: bottom center; border-radius: 2px; }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { border-color: #00ff88; transform: translateY(-1px); }
+    .indicator-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .buy-signal { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+    .sell-signal { background: rgba(255,0,92,0.1); color: #ff005c; border: 1px solid rgba(255,0,92,0.3); }
+    .neutral-signal { background: rgba(255,215,0,0.1); color: #ffd700; border: 1px solid rgba(255,215,0,0.3); }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    #tradingview-widget { overflow: hidden; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- Back Button -->
-    <a href="{% url 'game_board' room.id %}"
-       class="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6 transition">
-        ← Back to Trading Board
-    </a>
-
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold text-white mb-2">{{ asset.name }}</h1>
-        <p class="text-gray-400">Detailed asset information and investment form</p>
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-5">
+        <a href="{% url 'game_board' room.id %}"
+           class="inline-flex items-center text-[8px] text-gray-500 hover:neon-green transition uppercase tracking-wider">
+            ← BACK TO BOARD
+        </a>
+        <div class="flex items-center gap-2">
+            <span class="pulse-dot bg-[#00ff88]"></span>
+            <span class="text-[8px] neon-green font-bold">LIVE</span>
+        </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Stock Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-lg text-white font-bold">{{ asset.name }}</h1>
+            <div class="flex items-center gap-3 mt-1">
+                <span class="text-[8px] text-gray-500 uppercase">{{ asset.sector }}</span>
+                <span class="text-gray-700">•</span>
+                <span class="text-[9px] font-bold {% if asset.growth_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">
+                    {% if asset.growth_percent >= 0 %}+{% endif %}{{ asset.growth_percent|floatformat:1 }}%
+                </span>
+            </div>
+        </div>
+        <div class="text-right">
+            <p class="text-lg text-white font-bold">₹{{ asset.base_price|floatformat:2 }}</p>
+            <p class="text-[7px] text-gray-600 uppercase">Base Price</p>
+        </div>
+    </div>
 
-        <!-- LEFT COLUMN -->
-        <div class="lg:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
 
-            <!-- 📈 PRICE GRAPH -->
-            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-6 shadow-lg">
-                <h2 class="text-xl font-bold text-white mb-4">
-                    📈 Price Movement 
-                </h2>
+        <!-- ============ MAIN COLUMN (3/4) ============ -->
+        <div class="lg:col-span-3 space-y-5">
 
-                <div class="relative h-64">
-                 <canvas id="priceChart"></canvas>
+            <!-- TradingView Advanced Chart -->
+            <div class="pixel-card overflow-hidden p-0">
+                <div class="flex items-center justify-between px-5 py-3 border-b-2 border-[#2a2a3a]">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-[9px] text-white font-bold">ADVANCED CHART</h2>
+                        <span class="text-[7px] text-gray-600">TradingView</span>
+                    </div>
+                    <div class="text-[7px] text-gray-600">RSI • MACD • VOL</div>
                 </div>
-
-
-                {% comment %} <p class="text-gray-400 text-xs mt-2 italic">
-                    * Simulated historical + live movement based on trend & risk
-                </p> {% endcomment %}
+                <div id="tradingview-widget" style="height: 500px;"></div>
             </div>
 
-            <!-- Market Signals -->
-            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
-                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
-                    <span class="text-blue-400 mr-3">📊</span> Market Signals
-                </h2>
-
-                <div class="bg-fintech-dark border border-blue-700/30 rounded-lg p-6">
-                    <p class="text-gray-300 leading-relaxed text-lg">
-                        {{ asset.info_news_text }}
+            <!-- Key Statistics Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="stat-card pixel-card p-4">
+                    <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Base Price</p>
+                    <p class="text-sm font-bold text-white">₹{{ asset.base_price|floatformat:2 }}</p>
+                </div>
+                <div class="stat-card pixel-card p-4">
+                    <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Growth</p>
+                    <p class="text-sm font-bold {% if asset.growth_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">
+                        {{ asset.growth_percent|floatformat:1 }}%
+                    </p>
+                </div>
+                <div class="stat-card pixel-card p-4">
+                    <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Projected</p>
+                    <p class="text-sm font-bold neon-cyan" id="projected-price">—</p>
+                </div>
+                <div class="stat-card pixel-card p-4">
+                    <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Risk Level</p>
+                    <p class="text-sm font-bold
+                        {% if asset.risk_level == 'LOW' %}neon-green
+                        {% elif asset.risk_level == 'MEDIUM' %}neon-gold
+                        {% else %}text-[#ff005c]{% endif %}">
+                        {{ asset.risk_level }}
                     </p>
                 </div>
             </div>
 
-            <!-- Asset Details -->
-            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg">
-                <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                    <span class="text-green-400 mr-3">ℹ️</span> Asset Details
-                </h2>
+            <!-- Technical Indicators + News Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                <div class="grid grid-cols-2 gap-6">
-
-                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
-                        <p class="text-gray-400 text-xs font-semibold uppercase mb-2">Base Price</p>
-                        <p class="text-3xl font-bold text-green-400">₹{{ asset.base_price }}</p>
+                <!-- Technical Analysis -->
+                <div class="pixel-card p-5">
+                    <h3 class="text-[9px] neon-cyan font-bold mb-4">
+                        TECHNICAL INDICATORS
+                    </h3>
+                    <div class="space-y-3" id="tech-indicators">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[8px] text-gray-500">RSI (14)</span>
+                            <span class="indicator-pill neutral-signal" id="rsi-signal">...</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[8px] text-gray-500">MACD</span>
+                            <span class="indicator-pill neutral-signal" id="macd-signal">...</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[8px] text-gray-500">Moving Avg (20)</span>
+                            <span class="indicator-pill neutral-signal" id="ma-signal">...</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[8px] text-gray-500">Bollinger Bands</span>
+                            <span class="indicator-pill neutral-signal" id="bb-signal">...</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[8px] text-gray-500">Volume Trend</span>
+                            <span class="indicator-pill neutral-signal" id="vol-signal">...</span>
+                        </div>
                     </div>
+                    <div class="mt-4 pt-4 border-t-2 border-[#2a2a3a] flex justify-between items-center">
+                        <span class="text-[8px] text-gray-500 font-bold">OVERALL SIGNAL</span>
+                        <span class="indicator-pill neutral-signal" id="overall-signal">—</span>
+                    </div>
+                </div>
 
-                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
-                        <p class="text-gray-400 text-xs font-semibold uppercase mb-2">Growth Forecast</p>
-                        {% if asset.growth_percent > 0 %}
-                            <p class="text-3xl font-bold text-green-400">
-                                ↑ {{ asset.growth_percent|floatformat:1 }}%
+                <!-- Market News / Signals -->
+                <div class="pixel-card p-5">
+                    <h3 class="text-[9px] neon-gold font-bold mb-4">
+                        MARKET INTEL
+                    </h3>
+                    <div class="bg-[#0a0a0f] border border-[#2a2a3a] p-4 mb-4">
+                        <p class="text-[8px] text-gray-400 leading-relaxed">{{ asset.info_news_text }}</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-[7px] text-gray-500">Sector sentiment for <strong class="text-white">{{ asset.sector }}</strong> is currently
+                                {% if asset.growth_percent > 3 %}bullish{% elif asset.growth_percent > 0 %}cautiously optimistic{% elif asset.growth_percent > -3 %}weakening{% else %}bearish{% endif %}.
                             </p>
-                        {% elif asset.growth_percent < 0 %}
-                            <p class="text-3xl font-bold text-red-400">
-                                ↓ {{ asset.growth_percent|floatformat:1 }}%
+                        </div>
+                        <div>
+                            <p class="text-[7px] text-gray-500">Risk: <strong class="text-white">{{ asset.risk_level }}</strong> —
+                                {% if asset.risk_level == 'LOW' %}conservative portfolio fit.
+                                {% elif asset.risk_level == 'MEDIUM' %}balanced risk-reward.
+                                {% else %}high volatility, trade with caution.{% endif %}
                             </p>
-                        {% else %}
-                            <p class="text-3xl font-bold text-gray-400">→ 0%</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
-                        <p class="text-gray-400 text-xs font-semibold uppercase mb-2">Sector</p>
-                        <p class="text-xl font-bold text-blue-400">{{ asset.sector }}</p>
-                    </div>
-
-                    <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4">
-                        <p class="text-gray-400 text-xs font-semibold uppercase mb-2">Risk Level</p>
-                        <div class="flex items-center space-x-2">
-                            {% if asset.risk_level == 'HIGH' %}
-                                <span class="w-3 h-3 bg-red-500 rounded-full"></span>
-                                <span class="text-red-400 font-bold">{{ asset.risk_level }}</span>
-                            {% elif asset.risk_level == 'MEDIUM' or asset.risk_level == 'MED' %}
-                                <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                                <span class="text-yellow-400 font-bold">{{ asset.risk_level }}</span>
-                            {% else %}
-                                <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-                                <span class="text-green-400 font-bold">{{ asset.risk_level }}</span>
-                            {% endif %}
                         </div>
                     </div>
 
+                    <!-- Risk Gauge -->
+                    <div class="mt-5 flex flex-col items-center">
+                        <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-2">Risk Meter</p>
+                        <div class="risk-gauge">
+                            <div class="risk-gauge-bg"></div>
+                            <div class="risk-gauge-mask"></div>
+                            <div class="risk-needle" id="risk-needle"></div>
+                        </div>
+                        <div class="flex justify-between w-[120px] mt-1">
+                            <span class="text-[7px] neon-green">Low</span>
+                            <span class="text-[7px] neon-gold">Med</span>
+                            <span class="text-[7px] text-[#ff005c]">High</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN -->
-        <div class="lg:col-span-1">
-            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-8 shadow-lg sticky top-24">
+        <!-- ============ RIGHT SIDEBAR (1/4) ============ -->
+        <div class="lg:col-span-1 space-y-5">
 
-                <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                    <span class="text-yellow-400 mr-3">💰</span> Investment
-                </h2>
+            <!-- Investment Card -->
+            <div class="pixel-card p-5 sticky top-20">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-[10px] text-white font-bold">PLACE ORDER</h2>
+                    <span class="text-[7px] px-2 py-1 bg-[#00ff8815] neon-green border border-[#00ff8833] font-bold">BUY</span>
+                </div>
 
-                <form method="post" class="space-y-6">
+                <form method="post" class="space-y-4">
                     {% csrf_token %}
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-3">
-                            Investment Amount (₹)
-                        </label>
+                        <label class="text-[7px] text-gray-600 uppercase tracking-wider mb-1 block">&gt; Amount (₹)</label>
                         <input type="number" name="amount" min="1" step="0.01"
-                               class="w-full px-4 py-3 bg-fintech-dark border border-gray-600 rounded-lg
-                                      text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                               placeholder="Enter amount"
+                               id="invest-amount"
+                               class="w-full px-4 py-3 rounded-none"
                                required>
-                        {% if form.amount.errors %}
-                            <p class="text-red-400 text-sm mt-2">{{ form.amount.errors.0 }}</p>
-                        {% endif %}
+                    </div>
+
+                    <!-- Quick Amount Buttons -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setAmount(100)" class="text-[7px] py-2 bg-[#0a0a0f] border border-[#2a2a3a] text-gray-500 hover:border-[#00ff88] hover:neon-green transition font-bold">₹100</button>
+                        <button type="button" onclick="setAmount(500)" class="text-[7px] py-2 bg-[#0a0a0f] border border-[#2a2a3a] text-gray-500 hover:border-[#00ff88] hover:neon-green transition font-bold">₹500</button>
+                        <button type="button" onclick="setAmount(1000)" class="text-[7px] py-2 bg-[#0a0a0f] border border-[#2a2a3a] text-gray-500 hover:border-[#00ff88] hover:neon-green transition font-bold">₹1K</button>
+                    </div>
+
+                    <!-- Estimated Return -->
+                    <div class="bg-[#0a0a0f] border border-[#2a2a3a] p-3">
+                        <div class="flex justify-between text-[7px] mb-2">
+                            <span class="text-gray-600">Est. Return</span>
+                            <span class="{% if asset.growth_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %} font-bold" id="est-return">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between text-[7px]">
+                            <span class="text-gray-600">Est. P&L</span>
+                            <span class="{% if asset.growth_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %} font-bold" id="est-pnl">₹0.00</span>
+                        </div>
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-gradient-to-r from-green-600 to-green-700
-                               hover:from-green-700 hover:to-green-800
-                               text-white font-bold py-3 px-4 rounded-lg
-                               transition transform hover:scale-105">
-                        💵 Confirm Investment
+                        class="pixel-btn pixel-btn-green w-full py-3 text-[9px] font-bold rounded-none">
+                        CONFIRM INVESTMENT
                     </button>
                 </form>
 
                 <a href="{% url 'game_board' room.id %}"
-                   class="block text-center text-gray-400 hover:text-blue-400 text-sm mt-4 transition">
-                    ← Skip this asset
+                   class="block text-center text-[7px] text-gray-600 hover:text-gray-400 mt-3 transition">
+                    SKIP THIS ASSET
                 </a>
+            </div>
 
+            <!-- Asset Summary Card -->
+            <div class="pixel-card p-5">
+                <h3 class="text-[9px] text-white font-bold mb-4">ASSET SUMMARY</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-[7px] text-gray-600">Sector</span>
+                        <span class="text-[8px] text-white font-bold">{{ asset.sector }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-[7px] text-gray-600">Risk</span>
+                        <span class="text-[8px] font-bold
+                            {% if asset.risk_level == 'LOW' %}neon-green
+                            {% elif asset.risk_level == 'MEDIUM' %}neon-gold
+                            {% else %}text-[#ff005c]{% endif %}">{{ asset.risk_level }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-[7px] text-gray-600">Growth</span>
+                        <span class="text-[8px] font-bold {% if asset.growth_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">{{ asset.growth_percent|floatformat:1 }}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-[7px] text-gray-600">Projected</span>
+                        <span class="text-[8px] text-white font-bold" id="projected-price-sidebar">—</span>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}
@@ -153,81 +262,125 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const canvas = document.getElementById("priceChart");
-    if (!canvas) {
-        console.error("priceChart canvas not found");
-        return;
-    }
+    // ====== SYMBOL MAP — unique chart per stock ======
+    const symbolMap = {
+        "Reliance Industries": "BSE:RELIANCE",
+        "TCS":                 "BSE:TCS",
+        "Adani Ports":         "BSE:ADANIPORTS",
+        "HDFC Bank":           "BSE:HDFCBANK",
+        "Zomato":              "BSE:ZOMATO",
+        "Infosys":             "BSE:INFY",
+        "Paytm":               "BSE:PAYTM",
+        "Byju's":              "NASDAQ:AAPL",
+        "Yes Bank":            "BSE:YESBANK",
+        "Gold ETF":            "TVC:GOLD",
+        "TechNova":            "NASDAQ:NVDA",
+        "GreenEnergy":         "NSE:TATAPOWER",
+        "AgroFuture":          "NSE:ITC",
+        "SagarCorp":           "BSE:LT",
+        "NithinLtd":           "NASDAQ:TSLA",
+        "FinEdge Bank":        "BSE:ICICIBANK",
+        "Quantum Motors":      "BSE:TATAMOTORS",
+    };
 
-    const ctx = canvas.getContext("2d");
+    const assetName = "{{ asset.name }}";
+    const tvSymbol = symbolMap[assetName] || "BSE:SENSEX";
 
-    const basePrice = {{ asset.base_price }};
-    const growth = {{ asset.growth_percent }};
-    const risk = "{{ asset.risk_level }}";
-
-    let volatility = 1;
-    if (risk === "HIGH") volatility = 4;
-    if (risk === "MEDIUM" || risk === "MED") volatility = 2;
-
-    let prices = [];
-    let labels = [];
-    let price = basePrice;
-
-    // Generate historical data
-    for (let i = 30; i >= 0; i--) {
-        const bias = growth >= 0 ? 0.6 : -0.6;
-        const random = (Math.random() - 0.5) * volatility;
-        price = Math.max(1, price + bias + random);
-        prices.push(Number(price.toFixed(2))); //**
-        labels.push(`-${i}`);
-    }
-
-    const chart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [{
-                data: prices,
-                borderColor: growth >= 0 ? "#10b981" : "#ef4444",
-                borderWidth: 2,
-                tension: 0.4,
-                fill: false,
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            scales: {
-                x: { display: false },
-                y: {
-                    ticks: { color: "#9ca3af" },
-                    grid: { color: "rgba(255,255,255,0.05)" }
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
+    // ====== TradingView Advanced Chart Widget ======
+    new TradingView.widget({
+        "autosize": true,
+        "symbol": tvSymbol,
+        "interval": "D",
+        "timezone": "Asia/Kolkata",
+        "theme": "dark",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#0a0a0f",
+        "enable_publishing": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": false,
+        "details": true,
+        "hotlist": false,
+        "calendar": false,
+        "studies": [
+            "RSI@tv-basicstudies",
+            "MACD@tv-basicstudies",
+            "MASimple@tv-basicstudies"
+        ],
+        "container_id": "tradingview-widget",
+        "backgroundColor": "#0a0a0f",
+        "gridColor": "#2a2a3a",
+        "hide_top_toolbar": false,
+        "save_image": false,
     });
 
-    // Live updates
-    setInterval(() => {
-        const last = prices[prices.length - 1];
-        const direction = growth >= 0 ? 1 : -1;
-        const move = (Math.random() * volatility) * direction;
-        const newPrice = Math.max(1, last + move);
+    // ====== Projected Price ======
+    const basePrice = {{ asset.base_price }};
+    const growth = {{ asset.growth_percent }};
+    const projected = basePrice * (1 + growth / 100);
+    document.getElementById("projected-price").textContent = "₹" + projected.toFixed(2);
+    document.getElementById("projected-price-sidebar").textContent = "₹" + projected.toFixed(2);
 
-        prices.push(Number(newPrice.toFixed(2)));
-        labels.push("");
+    // ====== Simulated Technical Indicators ======
+    // (Based on the asset's growth and risk to create realistic signals)
+    const rsi = growth > 3 ? Math.floor(65 + Math.random() * 15) : growth > 0 ? Math.floor(45 + Math.random() * 15) : Math.floor(25 + Math.random() * 15);
+    const rsiEl = document.getElementById("rsi-signal");
+    if (rsi > 70) { rsiEl.textContent = "Overbought (" + rsi + ")"; rsiEl.className = "indicator-pill sell-signal"; }
+    else if (rsi < 30) { rsiEl.textContent = "Oversold (" + rsi + ")"; rsiEl.className = "indicator-pill buy-signal"; }
+    else { rsiEl.textContent = "Neutral (" + rsi + ")"; rsiEl.className = "indicator-pill neutral-signal"; }
 
-        prices.shift();
-        labels.shift();
+    const macdEl = document.getElementById("macd-signal");
+    if (growth > 2) { macdEl.textContent = "Bullish Cross"; macdEl.className = "indicator-pill buy-signal"; }
+    else if (growth < -2) { macdEl.textContent = "Bearish Cross"; macdEl.className = "indicator-pill sell-signal"; }
+    else { macdEl.textContent = "Converging"; macdEl.className = "indicator-pill neutral-signal"; }
 
-        chart.update();
-    }, 1000);
+    const maEl = document.getElementById("ma-signal");
+    if (growth > 0) { maEl.textContent = "Above MA20"; maEl.className = "indicator-pill buy-signal"; }
+    else { maEl.textContent = "Below MA20"; maEl.className = "indicator-pill sell-signal"; }
 
+    const bbEl = document.getElementById("bb-signal");
+    const riskLevel = "{{ asset.risk_level }}";
+    if (riskLevel === "HIGH") { bbEl.textContent = "Near Upper Band"; bbEl.className = "indicator-pill sell-signal"; }
+    else if (riskLevel === "LOW") { bbEl.textContent = "Near Lower Band"; bbEl.className = "indicator-pill buy-signal"; }
+    else { bbEl.textContent = "Mid Band"; bbEl.className = "indicator-pill neutral-signal"; }
+
+    const volEl = document.getElementById("vol-signal");
+    if (Math.abs(growth) > 4) { volEl.textContent = "High Volume"; volEl.className = "indicator-pill " + (growth > 0 ? "buy-signal" : "sell-signal"); }
+    else { volEl.textContent = "Average"; volEl.className = "indicator-pill neutral-signal"; }
+
+    // Overall signal
+    let buyCount = 0, sellCount = 0;
+    document.querySelectorAll("#tech-indicators .indicator-pill").forEach(el => {
+        if (el.classList.contains("buy-signal")) buyCount++;
+        else if (el.classList.contains("sell-signal")) sellCount++;
+    });
+    const overallEl = document.getElementById("overall-signal");
+    if (buyCount > sellCount) { overallEl.textContent = "BUY (" + buyCount + "/5)"; overallEl.className = "indicator-pill buy-signal text-sm"; }
+    else if (sellCount > buyCount) { overallEl.textContent = "SELL (" + sellCount + "/5)"; overallEl.className = "indicator-pill sell-signal text-sm"; }
+    else { overallEl.textContent = "HOLD"; overallEl.className = "indicator-pill neutral-signal text-sm"; }
+
+    // ====== Risk Gauge Needle ======
+    const riskDeg = riskLevel === "LOW" ? -60 : riskLevel === "MEDIUM" ? 0 : 60;
+    document.getElementById("risk-needle").style.transform = "rotate(" + riskDeg + "deg)";
+
+    // ====== Investment Calculator ======
+    const amountInput = document.getElementById("invest-amount");
+    if (amountInput) {
+        amountInput.addEventListener("input", function() {
+            const amt = parseFloat(this.value) || 0;
+            const ret = amt * (1 + growth / 100);
+            const pnl = ret - amt;
+            document.getElementById("est-return").textContent = "₹" + ret.toFixed(2);
+            document.getElementById("est-pnl").textContent = (pnl >= 0 ? "+" : "") + "₹" + pnl.toFixed(2);
+        });
+    }
 });
+
+// Quick amount setter
+function setAmount(val) {
+    const input = document.getElementById("invest-amount");
+    input.value = val;
+    input.dispatchEvent(new Event("input"));
+}
 </script>
 {% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}How to Play - TradeLeague{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-lg neon-cyan mb-2">HOW TO PLAY</h1>
+        <p class="text-[8px] text-gray-500 uppercase tracking-wider max-w-xl">
+            TradeLeague is a competitive trading simulation. Analyze markets, allocate capital, and climb the leaderboard.
+        </p>
+    </div>
+
+    <!-- Steps Grid -->
+    <div class="grid gap-5 md:grid-cols-2">
+
+        <!-- Step 1 -->
+        <div class="pixel-card p-5 hover:border-[#00ff88] transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center justify-center w-8 h-8 bg-[#00ff8815] border border-[#00ff8833]
+                             neon-green text-[9px] font-bold">01</span>
+                <h3 class="text-[10px] text-white font-bold">CREATE OR JOIN</h3>
+            </div>
+            <ul class="space-y-1.5 text-[8px] text-gray-500 ml-11">
+                <li>Start a new game room from the lobby or enter a room code.</li>
+                <li>Share the room link with friends to play 1v1.</li>
+                <li>Each room supports head-to-head format.</li>
+            </ul>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="pixel-card p-5 hover:border-[#00e5ff] transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center justify-center w-8 h-8 bg-[#00e5ff15] border border-[#00e5ff33]
+                             neon-cyan text-[9px] font-bold">02</span>
+                <h3 class="text-[10px] text-white font-bold">WAIT FOR OPPONENTS</h3>
+            </div>
+            <ul class="space-y-1.5 text-[8px] text-gray-500 ml-11">
+                <li>Minimum 2 players required to begin.</li>
+                <li>Host starts the game once opponent joins.</li>
+            </ul>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="pixel-card p-5 hover:border-[#ffd700] transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center justify-center w-8 h-8 bg-[#ffd70015] border border-[#ffd70033]
+                             neon-gold text-[9px] font-bold">03</span>
+                <h3 class="text-[10px] text-white font-bold">ANALYZE MARKET</h3>
+            </div>
+            <ul class="space-y-1.5 text-[8px] text-gray-500 ml-11">
+                <li>Study real-world asset data, charts, and indicators.</li>
+                <li>Use built-in analysis tools to evaluate risk.</li>
+                <li>Compare assets before committing capital.</li>
+            </ul>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="pixel-card p-5 hover:border-[#b44dff] transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center justify-center w-8 h-8 bg-[#b44dff15] border border-[#b44dff33]
+                             text-[#b44dff] text-[9px] font-bold">04</span>
+                <h3 class="text-[10px] text-white font-bold">INVEST WITHIN TIMER</h3>
+            </div>
+            <ul class="space-y-1.5 text-[8px] text-gray-500 ml-11">
+                <li>Allocate virtual funds across assets before the clock runs out.</li>
+                <li>Diversify or go all-in — every decision impacts your score.</li>
+                <li>Adjust positions as conditions shift.</li>
+            </ul>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="pixel-card p-5 hover:border-[#ff005c] transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center justify-center w-8 h-8 bg-[#ff005c15] border border-[#ff005c33]
+                             text-[#ff005c] text-[9px] font-bold">05</span>
+                <h3 class="text-[10px] text-white font-bold">RESULTS & RANKINGS</h3>
+            </div>
+            <ul class="space-y-1.5 text-[8px] text-gray-500 ml-11">
+                <li>Profits and losses calculated instantly.</li>
+                <li>View detailed performance breakdown vs opponents.</li>
+                <li>Rankings update in real time on the leaderboard.</li>
+            </ul>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="pixel-card p-5 hover:border-[#00ff88] transition-all">
+            <div class="flex items-center gap-3 mb-3">
+                <span class="flex items-center justify-center w-8 h-8 bg-[#00ff8815] border border-[#00ff8833]
+                             neon-green text-[9px] font-bold">06</span>
+                <h3 class="text-[10px] text-white font-bold">CLIMB THE LEAGUES</h3>
+            </div>
+            <ul class="space-y-1.5 text-[8px] text-gray-500 ml-11">
+                <li>Earn ranking points based on profit and consistency.</li>
+                <li>Progress through league tiers as skill improves.</li>
+                <li>Compete for top positions on global leaderboard.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Pro Tips Section -->
+    <div class="pixel-card p-6 mt-8">
+        <h2 class="text-[10px] neon-gold font-bold mb-4">PRO TIPS</h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+            <div class="flex items-start gap-2 text-[8px]">
+                <span class="neon-green">▸</span>
+                <span class="text-gray-400">Diversify — don't put all capital into a single asset.</span>
+            </div>
+            <div class="flex items-start gap-2 text-[8px]">
+                <span class="neon-cyan">▸</span>
+                <span class="text-gray-400">Watch trend indicators and volatility before investing.</span>
+            </div>
+            <div class="flex items-start gap-2 text-[8px]">
+                <span class="text-[#b44dff]">▸</span>
+                <span class="text-gray-400">Review trade history after each round to find patterns.</span>
+            </div>
+            <div class="flex items-start gap-2 text-[8px]">
+                <span class="neon-gold">▸</span>
+                <span class="text-gray-400">Consistency matters — steady gains rank higher than risky swings.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="mt-5 flex items-center gap-3 bg-[#ffd70010] border border-[#ffd70033] px-5 py-3">
+        <span class="neon-gold text-sm font-bold">!</span>
+        <p class="text-[8px] text-gray-500">
+            This is a <span class="text-white font-bold">SIMULATED TRADING ENVIRONMENT</span> for educational purposes only. No real money involved.
+        </p>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6">
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 text-[8px] text-gray-500 hover:neon-green transition">
+            ← BACK TO DASHBOARD
+        </a>
+    </div>
+
+</div>
+{% endblock %}

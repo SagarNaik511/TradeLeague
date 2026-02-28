@@ -6,103 +6,114 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
 
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
-            <h1 class="text-4xl font-bold text-white mb-2">Trading Arena</h1>
-            <p class="text-gray-400">
-                Choose assets and place investments before the timer ends
+            <h1 class="text-lg neon-green mb-2">TRADING ARENA</h1>
+            <p class="text-[8px] text-gray-500 uppercase tracking-wider">
+                Choose assets and invest before the timer ends
             </p>
         </div>
 
-        <!-- ⏱️ TIMER -->
-        <div class="mt-6 md:mt-0 bg-fintech-darker border border-blue-700/40 rounded-xl px-6 py-4 text-center">
-            <p class="text-gray-400 text-sm mb-1">Time Remaining</p>
-            <p id="trade-timer" class="text-3xl font-bold text-blue-400">
-                --:--
-            </p>
+        <div class="flex items-center gap-4 mt-4 md:mt-0">
+            <!-- BALANCE -->
+            <div class="pixel-card px-6 py-4 text-center"
+                 style="border-color: rgba(0,255,136,0.2);">
+                <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Balance</p>
+                <p class="text-xl neon-green font-bold tracking-wider">
+                    ₹{{ profile.account_balance|floatformat:0 }}
+                </p>
+            </div>
+            <!-- TIMER -->
+            <div class="pixel-card px-6 py-4 text-center"
+                 style="border-color: rgba(0,229,255,0.2);">
+                <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Time Remaining</p>
+                <p id="trade-timer" class="text-xl neon-cyan font-bold tracking-wider">
+                    --:--
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- Assets Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {% for asset in assets %}
         <a href="{% url 'asset_detail' asset.id room.id %}" class="group">
-            <div class="bg-fintech-darker border border-gray-700 rounded-2xl p-6 shadow-lg
-                        hover:border-blue-500 hover:shadow-blue-500/20
-                        transition transform hover:scale-105 h-full">
+            <div class="pixel-card p-5
+                        hover:border-[#00ff88] hover:shadow-[0_0_15px_rgba(0,255,136,0.15)]
+                        transition-all h-full">
 
                 <!-- Asset Name -->
-                <h3 class="text-xl font-bold text-blue-400 mb-3 group-hover:text-blue-300">
+                <h3 class="text-[10px] neon-cyan font-bold mb-2 group-hover:text-[#00ff88] transition">
                     {{ asset.name }}
                 </h3>
 
                 <!-- Sector -->
-                <span class="inline-block mb-4 bg-blue-900/30 border border-blue-700/50
-                             text-blue-300 text-xs font-semibold px-3 py-1 rounded-full">
+                <span class="inline-block mb-3 bg-[#00e5ff10] border border-[#00e5ff33]
+                             text-[#00e5ff] text-[7px] font-bold px-2 py-0.5 uppercase tracking-wider">
                     {{ asset.sector }}
                 </span>
 
                 <!-- Risk -->
-                <div class="mb-4">
-                    <p class="text-gray-400 text-xs uppercase mb-1">Risk</p>
+                <div class="mb-3">
+                    <p class="text-[7px] text-gray-600 uppercase mb-1">Risk</p>
                     {% if asset.risk_level == "HIGH" %}
-                        <span class="text-red-400 font-bold">HIGH</span>
+                        <span class="text-[9px] text-[#ff005c] font-bold">HIGH</span>
                     {% elif asset.risk_level == "MEDIUM" or asset.risk_level == "MED" %}
-                        <span class="text-yellow-400 font-bold">MEDIUM</span>
+                        <span class="text-[9px] neon-gold font-bold">MEDIUM</span>
                     {% else %}
-                        <span class="text-green-400 font-bold">LOW</span>
+                        <span class="text-[9px] neon-green font-bold">LOW</span>
                     {% endif %}
                 </div>
 
                 <!-- Price -->
-                <div class="bg-fintech-dark border border-gray-700/50 rounded-lg p-4 mb-4">
-                    <p class="text-gray-500 text-xs uppercase">Base Price</p>
-                    <p class="text-green-400 font-bold text-lg">₹{{ asset.base_price }}</p>
+                <div class="bg-[#0a0a0f] border border-[#2a2a3a] p-3 mb-3">
+                    <p class="text-[7px] text-gray-600 uppercase">Base Price</p>
+                    <p class="text-sm neon-green font-bold">₹{{ asset.base_price }}</p>
                 </div>
 
                 <!-- Growth -->
                 <div>
-                    <p class="text-gray-500 text-xs uppercase mb-1">Projected Growth</p>
+                    <p class="text-[7px] text-gray-600 uppercase mb-1">Growth</p>
                     {% if asset.growth_percent > 0 %}
-                        <p class="text-green-400 font-bold">
-                            ↑ {{ asset.growth_percent|floatformat:1 }}%
+                        <p class="text-[9px] neon-green font-bold">
+                            +{{ asset.growth_percent|floatformat:1 }}%
                         </p>
                     {% elif asset.growth_percent < 0 %}
-                        <p class="text-red-400 font-bold">
-                            ↓ {{ asset.growth_percent|floatformat:1 }}%
+                        <p class="text-[9px] text-[#ff005c] font-bold">
+                            {{ asset.growth_percent|floatformat:1 }}%
                         </p>
                     {% else %}
-                        <p class="text-gray-400 font-bold">0%</p>
+                        <p class="text-[9px] text-gray-500 font-bold">0%</p>
                     {% endif %}
                 </div>
 
-                <div class="mt-5 pt-3 border-t border-gray-700 text-center">
-                    <span class="text-sm text-gray-400 group-hover:text-blue-400">
-                        Click to invest →
+                <div class="mt-4 pt-3 border-t border-[#2a2a3a] text-center">
+                    <span class="text-[8px] text-gray-500 group-hover:neon-green transition">
+                        CLICK TO INVEST
                     </span>
                 </div>
             </div>
         </a>
         {% empty %}
-        <div class="col-span-full text-center py-20">
-            <h2 class="text-2xl text-gray-400">No assets available</h2>
+        <div class="col-span-full text-center py-16">
+            <h2 class="text-sm text-gray-500">NO ASSETS AVAILABLE</h2>
         </div>
         {% endfor %}
     </div>
 
     <!-- HOST ONLY: END GAME -->
     {% if user == room.host %}
-    <form method="post" action="{% url 'result' room.id %}" class="mt-12 text-center">
+    <form method="post" action="{% url 'result' room.id %}" class="mt-10 text-center">
         {% csrf_token %}
-        <button class="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-xl">
-            End Game & View Results
+        <button class="pixel-btn pixel-btn-magenta px-8 py-3 text-[9px] font-bold rounded-none">
+            END GAME & VIEW RESULTS
         </button>
     </form>
     {% endif %}
 
 </div>
 
-<!-- ⏱️ TIMER SCRIPT -->
+<!-- TIMER SCRIPT -->
 <script>
     const startedAt = new Date("{{ room.started_at|date:'c' }}").getTime();
     const durationMinutes = {{ room.trade_duration }};

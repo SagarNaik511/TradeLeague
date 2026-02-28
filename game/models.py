@@ -67,7 +67,7 @@ class GameRoom(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    account_balance = models.FloatField(default=0)
+    account_balance = models.FloatField(default=100000)
     total_profit_counter = models.FloatField(default=0)
 
     games_played = models.IntegerField(default=0)

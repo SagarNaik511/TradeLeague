@@ -11,5 +11,6 @@ urlpatterns = [
     path("leaderboard/", views.leaderboard),
     path("me/", views.my_profile),
     path("assets/<int:asset_id>/", views.asset_detail),
-
+    # path("how-to-play/", views.how_to_play, name="how_to_play"),
+     
 ]

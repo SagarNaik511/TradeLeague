@@ -6,79 +6,240 @@
 
     <title>{% block title %}TradeLeague{% endblock %}</title>
 
-    <!-- Tailwind CSS (CDN – OK for dev) -->
+    <!-- Pixel Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        fintech: {
-                            dark: '#0f172a',
-                            darker: '#0a0e27',
-                            accent: '#3b82f6',
-                            success: '#10b981',
-                            danger: '#ef4444',
+                        pixel: {
+                            bg: '#0a0a0f',
+                            card: '#12121a',
+                            border: '#2a2a3a',
+                            neon: '#00ff88',
+                            cyan: '#00e5ff',
+                            magenta: '#ff005c',
+                            gold: '#ffd700',
+                            orange: '#ff8c00',
+                            purple: '#b44dff',
+                            dim: '#1a1a2e',
                         }
+                    },
+                    fontFamily: {
+                        pixel: ['"Press Start 2P"', 'cursive'],
                     }
                 }
             }
         }
     </script>
 
+    <style>
+        * { font-family: 'Press Start 2P', cursive !important; }
+        body { font-size: 10px; line-height: 2; background: #0a0a0f; }
+
+        /* Pixel border utility */
+        .pixel-border {
+            border: 3px solid #2a2a3a;
+            box-shadow: 
+                inset 0 0 0 1px #1a1a2e,
+                0 0 0 1px #0a0a0f,
+                0 0 20px rgba(0, 255, 136, 0.05);
+        }
+        .pixel-border:hover {
+            border-color: #00ff88;
+            box-shadow: 
+                inset 0 0 0 1px #1a1a2e,
+                0 0 0 1px #0a0a0f,
+                0 0 30px rgba(0, 255, 136, 0.15);
+        }
+
+        /* Neon glow effects */
+        .neon-green { color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.5); }
+        .neon-cyan { color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
+        .neon-magenta { color: #ff005c; text-shadow: 0 0 10px rgba(255,0,92,0.5); }
+        .neon-gold { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+        /* Scanline overlay */
+        .scanlines::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.03) 2px,
+                rgba(0,0,0,0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Pixel button */
+        .pixel-btn {
+            border: 3px solid;
+            position: relative;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .pixel-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+        .pixel-btn:active {
+            transform: translateY(1px);
+        }
+
+        .pixel-btn-green {
+            background: #00ff88;
+            border-color: #00cc6a;
+            color: #0a0a0f;
+            box-shadow: 0 4px 0 #009950, 0 0 20px rgba(0,255,136,0.3);
+        }
+        .pixel-btn-green:hover { box-shadow: 0 4px 0 #009950, 0 0 30px rgba(0,255,136,0.5); }
+
+        .pixel-btn-cyan {
+            background: #00e5ff;
+            border-color: #00b8cc;
+            color: #0a0a0f;
+            box-shadow: 0 4px 0 #008fa3, 0 0 20px rgba(0,229,255,0.3);
+        }
+
+        .pixel-btn-magenta {
+            background: #ff005c;
+            border-color: #cc004a;
+            color: #fff;
+            box-shadow: 0 4px 0 #990038, 0 0 20px rgba(255,0,92,0.3);
+        }
+
+        .pixel-btn-outline {
+            background: transparent;
+            border-color: #00ff88;
+            color: #00ff88;
+            box-shadow: 0 4px 0 #004d29;
+        }
+
+        /* Pixel card */
+        .pixel-card {
+            background: #12121a;
+            border: 3px solid #2a2a3a;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.4);
+        }
+
+        /* Grid background */
+        .grid-bg {
+            background-image:
+                linear-gradient(to right, rgba(0,255,136,0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,255,136,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Ticker tape animation */
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-scroll {
+            animation: ticker 30s linear infinite;
+        }
+
+        /* Input styling */
+        input, select, textarea {
+            font-size: 9px !important;
+            background: #0a0a0f !important;
+            border: 2px solid #2a2a3a !important;
+            color: #00ff88 !important;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #00ff88 !important;
+            box-shadow: 0 0 10px rgba(0,255,136,0.2) !important;
+            outline: none !important;
+        }
+        input::placeholder { color: #3a3a4a !important; }
+
+        /* Chrome scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 0; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+    </style>
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://s3.tradingview.com/tv.js"></script>
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="bg-fintech-dark text-gray-100 antialiased">
+<body class="bg-pixel-bg text-gray-300 scanlines grid-bg">
 
 {% if user.is_authenticated %}
+<!-- ================= TICKER TAPE ================= -->
+<div class="bg-pixel-card border-b-2 border-pixel-border overflow-hidden py-1">
+    <div class="flex whitespace-nowrap ticker-scroll">
+        <span class="mx-6 text-[8px]"><span class="neon-green">RELIANCE +4.2%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-magenta">ADANI -2.4%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">TCS +3.1%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">ZOMATO +6.5%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-magenta">PAYTM -6.8%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-cyan">HDFC +2.8%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-magenta">YESBANK -4.9%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">INFY +1.9%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">RELIANCE +4.2%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-magenta">ADANI -2.4%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">TCS +3.1%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">ZOMATO +6.5%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-magenta">PAYTM -6.8%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-cyan">HDFC +2.8%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-magenta">YESBANK -4.9%</span></span>
+        <span class="mx-6 text-[8px]"><span class="neon-green">INFY +1.9%</span></span>
+    </div>
+</div>
+
 <!-- ================= NAVBAR ================= -->
-<nav class="bg-fintech-darker border-b border-gray-700 sticky top-0 z-50">
+<nav class="bg-pixel-card sticky top-0 z-50" style="border-bottom: 3px solid #2a2a3a;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
 
             <!-- Logo -->
-            <div class="flex items-center">
-                <a href="{% url 'dashboard' %}"
-                   class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                    TradeLeague
-                </a>
-            </div>
+            <a href="{% url 'dashboard' %}" class="flex items-center gap-2">
+                <span class="text-sm neon-green tracking-wider">TRADE<span class="neon-cyan">LEAGUE</span></span>
+            </a>
 
-            <!-- Navigation Links -->
+            <!-- Nav Links -->
             <div class="hidden md:flex items-center space-x-6">
-                <a href="{% url 'dashboard' %}"
-                   class="text-gray-300 hover:text-blue-400 transition">
+                <a href="{% url 'dashboard' %}" class="text-[9px] text-gray-400 hover:text-pixel-neon transition uppercase tracking-wider">
                     Dashboard
                 </a>
-
-                <a href="{% url 'lobby' %}"
-                   class="text-gray-300 hover:text-blue-400 transition">
+                <a href="{% url 'lobby' %}" class="text-[9px] text-gray-400 hover:text-pixel-cyan transition uppercase tracking-wider">
                     Lobby
                 </a>
-
-                <a href="{% url 'market' %}"
-                   class="text-gray-300 hover:text-blue-400 transition">
+                <a href="{% url 'market' %}" class="text-[9px] text-gray-400 hover:text-pixel-gold transition uppercase tracking-wider">
                     Market
                 </a>
-
-                <span class="text-gray-500 text-sm">
-                    👤 {{ user.username }}
+                <span class="text-[8px] text-pixel-purple px-2 py-1 border border-pixel-purple rounded">
+                    {{ user.username }}
                 </span>
             </div>
 
-            <!-- Logout -->
-            <div>
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'how_to_play' %}" title="How to Play"
+                   class="w-8 h-8 flex items-center justify-center border-2 border-pixel-cyan text-pixel-cyan rounded hover:bg-pixel-cyan hover:text-pixel-bg transition text-[10px]">
+                    ?
+                </a>
                 <a href="{% url 'logout' %}"
-                   class="px-4 py-2 bg-red-600 hover:bg-red-700
-                          text-white rounded-lg transition font-medium">
-                    Logout
+                   class="pixel-btn pixel-btn-magenta px-3 py-1 text-[8px] rounded">
+                    LOGOUT
                 </a>
             </div>
-
         </div>
     </div>
 </nav>
@@ -88,13 +249,6 @@
 <main class="min-h-[calc(100vh-64px)]">
     {% block content %}{% endblock %}
 </main>
-
-<!-- ================= FOOTER ================= -->
-<footer class="bg-fintech-darker border-t border-gray-700 mt-12 py-6">
-    <div class="max-w-7xl mx-auto px-4 text-center text-gray-400 text-sm">
-        © 2026 TradeLeague • Gamified Virtual Trading for Students
-    </div>
-</footer>
 
 {% block extra_js %}{% endblock %}
 </body>

@@ -9,21 +9,23 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 
+load_dotenv()
 # --------------------------------------------------
 # BASE CONFIG
 # --------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-rlmug3+4vxp$o#hnvs0+6v%$xz-62_v5psa8ibnyyaozl+#b&-'
+SECRET_KEY = os.getenv("SECRET_KEY")
+
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1', '192.168.10.14',' 10.93.11.130']
-
+ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1', '192.168.10.14',' 10.93.11.130','10.40.7.130',]
 
 # --------------------------------------------------
 # APPLICATIONS
@@ -131,7 +133,7 @@ STATIC_URL = '/static/'
 
 
 # --------------------------------------------------
-# AUTH REDIRECTION (🔥 IMPORTANT FIX)
+# AUTH REDIRECTION (IMPORTANT FIX)
 # --------------------------------------------------
 
 LOGIN_URL = '/login/'
