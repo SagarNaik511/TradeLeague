@@ -11,6 +11,34 @@
         <p class="text-[8px] text-gray-500 uppercase tracking-wider">Review investments and performance</p>
     </div>
 
+    <div class="pixel-card p-6 mb-6 text-center">
+        {% if result_context.is_draw %}
+            <h2 class="text-lg neon-cyan mb-3">DRAW</h2>
+            <p class="text-[9px] text-gray-400">Both players finished with the same profit.</p>
+        {% elif result_context.did_win %}
+            <h2 class="text-lg neon-green mb-3">YOU WIN</h2>
+            <p class="text-[9px] text-gray-400">Your profit beat your opponent this round.</p>
+        {% else %}
+            <h2 class="text-lg text-[#ff005c] mb-3 font-bold">YOU LOSE</h2>
+            <p class="text-[9px] text-gray-400">Your opponent made more profit this round.</p>
+        {% endif %}
+
+        <div class="grid grid-cols-2 gap-4 mt-5">
+            <div class="bg-[#0a0a0f] border-2 border-[#2a2a3a] p-4">
+                <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Your Profit</p>
+                <p class="text-sm {% if result_context.current_user_profit >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %} font-bold">
+                    Rs {{ result_context.current_user_profit|floatformat:2 }}
+                </p>
+            </div>
+            <div class="bg-[#0a0a0f] border-2 border-[#2a2a3a] p-4">
+                <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Opponent Profit</p>
+                <p class="text-sm {% if result_context.opponent_profit >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %} font-bold">
+                    Rs {{ result_context.opponent_profit|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -131,12 +159,16 @@
                     <div class="bg-[#b44dff10] border border-[#b44dff33] p-4 mt-4">
                         <p class="text-[8px] text-[#b44dff] font-bold mb-2">FEEDBACK</p>
                         <p class="text-[8px] text-gray-400 leading-relaxed">
-                            {% if analysis.risk_behavior == 'aggressive' %}
-                                You took on high-risk investments. Consider diversifying more.
-                            {% elif analysis.risk_behavior == 'conservative' %}
-                                Safe trading approach. Try more growth-oriented assets next time.
+                            {% if result_context.user_investment_count == 0 %}
+                                You did not invest in any asset, so you missed every profit opportunity.
+                            {% elif result_context.weak_picks %}
+                                Your weaker picks were {{ result_context.weak_picks|join:", " }}. These assets had negative growth, so they pulled your score down.
+                            {% elif result_context.missed_growth %}
+                                You picked growing assets, but invested lightly in {{ result_context.missed_growth|join:", " }}. Consider sizing up when the signal is strong.
+                            {% elif analysis.risk_behavior == 'aggressive' %}
+                                You took too much concentrated risk. Try spreading capital across more assets next round.
                             {% else %}
-                                Balanced portfolio strategy. Keep learning!
+                                Your choices were balanced. To improve, compare growth, risk level, and chart signals before placing larger orders.
                             {% endif %}
                         </p>
                     </div>

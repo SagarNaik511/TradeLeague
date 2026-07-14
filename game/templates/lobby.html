@@ -1,116 +1,89 @@
 {% extends "base.html" %}
 
-{% block title %}Game Lobby - TradeLeague{% endblock %}
+{% block title %}Join Game - TradeLeague{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-5xl mx-auto px-4 py-8">
 
-    <!-- Header -->
     <div class="mb-10">
-        <h1 class="text-lg neon-cyan mb-2">GAME LOBBY</h1>
-        <p class="text-[8px] text-gray-600 uppercase tracking-wider">Host a match or join an existing room</p>
+        <h1 class="text-lg neon-cyan mb-2">JOIN GAME</h1>
+        <p class="text-[8px] text-gray-600 uppercase tracking-wider">Join by friend code or find an open public match</p>
     </div>
 
-    <!-- Action Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
-        <!-- HOST GAME -->
         <div class="pixel-card p-6">
-            <div class="flex items-start justify-between mb-5">
-                <div>
-                    <h2 class="text-sm neon-green mb-2">HOST GAME</h2>
-                    <p class="text-[8px] text-gray-500">Create a 1v1 timed trading match</p>
-                </div>
-                
-            </div>
+            <h2 class="text-sm neon-green mb-2">HOST GAME</h2>
+            <p class="text-[8px] text-gray-500 mb-6">Create a private code room or a public room visible to other players.</p>
 
-            <form method="post" action="{% url 'create_room' %}">
+            <a href="{% url 'create_room' %}"
+               class="pixel-btn pixel-btn-green block w-full py-3 text-[9px] font-bold text-center rounded-none">
+                CREATE ROOM
+            </a>
+        </div>
+
+        <div class="pixel-card p-6">
+            <h2 class="text-sm neon-cyan mb-2">ENTER ROOM CODE</h2>
+            <p class="text-[8px] text-gray-500 mb-6">Ask the host for the code, then join their waiting room.</p>
+
+            {% if error %}
+                <div class="bg-[#ff005c10] border-2 border-[#ff005c55] p-4 mb-5">
+                    <p class="text-[8px] text-[#ff5f91] font-bold">{{ error }}</p>
+                </div>
+            {% endif %}
+
+            <form method="post" class="space-y-4">
                 {% csrf_token %}
 
-                <label class="block text-[8px] text-gray-500 mb-2 uppercase tracking-wider">
-                    &gt; Trade Duration
-                </label>
-                <select name="trade_duration"
-                        class="w-full mb-5 px-4 py-3 rounded-none">
-                    <option value="5">5 MINUTES</option>
-                    <option value="10">10 MINUTES</option>
-                    <option value="15">15 MINUTES</option>
-                </select>
+                <div>
+                    <label for="{{ form.room_code.id_for_label }}"
+                           class="block text-[8px] text-gray-500 mb-2 uppercase tracking-wider">
+                        &gt; Room Code
+                    </label>
+                    {{ form.room_code }}
+                    {% if form.room_code.errors %}
+                        <p class="text-[7px] text-[#ff5f91] mt-2">{{ form.room_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
 
                 <button type="submit"
-                        class="pixel-btn pixel-btn-green block w-full py-3 text-[9px] font-bold rounded-none">
-                    + CREATE ROOM
+                        class="pixel-btn pixel-btn-cyan block w-full py-3 text-[9px] font-bold rounded-none">
+                    JOIN GAME
                 </button>
             </form>
         </div>
-
-        <!-- JOIN INFO -->
-        <div class="pixel-card p-6">
-            <div class="flex items-start justify-between mb-5">
-                <div>
-                    <h2 class="text-sm neon-cyan mb-2">JOIN GAME</h2>
-                    <p class="text-[8px] text-gray-500">Enter an open waiting room</p>
-                </div>
-            </div>
-
-            <div class="bg-[#0a0a0f] border-2 border-[#2a2a3a] p-4">
-                <p class="text-sm font-bold
-                    {% if rooms %}neon-green{% else %}text-gray-500{% endif %}">
-                    {% if rooms %}
-                        {{ rooms|length }} ROOM{{ rooms|length|pluralize:"S" }} OPEN
-                    {% else %}
-                        NO ROOMS AVAILABLE
-                    {% endif %}
-                </p>
-                <p class="text-[7px] text-gray-600 mt-2">Scroll down to join</p>
-            </div>
-        </div>
     </div>
 
-    <!-- AVAILABLE ROOMS -->
     <div class="pixel-card p-6">
-        <h2 class="text-sm neon-gold mb-6 flex items-center gap-2">
-            OPEN GAMES
-        </h2>
+        <h2 class="text-sm neon-gold mb-2">PUBLIC ROOMS</h2>
+        <p class="text-[8px] text-gray-500 mb-6">Open rooms waiting for a second player. Private rooms never appear here.</p>
 
-        {% if rooms %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {% for room in rooms %}
-            <div class="bg-[#0a0a0f] border-2 border-[#2a2a3a] p-5 hover:border-[#00ff88] transition">
+        {% if public_rooms %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for room in public_rooms %}
+                    <div class="bg-[#0a0a0f] border-2 border-[#2a2a3a] p-5">
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <p class="text-[7px] text-gray-600 uppercase">Host</p>
+                                <p class="text-[9px] text-white font-bold">{{ room.host.username }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[7px] text-gray-600 uppercase">Duration</p>
+                                <p class="text-[9px] neon-cyan font-bold">{{ room.trade_duration }} MIN</p>
+                            </div>
+                        </div>
 
-                <div class="space-y-3 mb-5">
-                    <div class="bg-[#12121a] border border-[#2a2a3a] p-3">
-                        <p class="text-[7px] text-gray-600 uppercase">Host</p>
-                        <p class="text-[9px] text-white font-bold">{{ room.host.username }}</p>
+                        <a href="{% url 'join_public_room' room.id %}"
+                           class="pixel-btn pixel-btn-green block w-full py-3 text-[9px] font-bold text-center rounded-none">
+                            JOIN PUBLIC ROOM
+                        </a>
                     </div>
-
-                    <div class="bg-[#12121a] border border-[#2a2a3a] p-3">
-                        <p class="text-[7px] text-gray-600 uppercase">Duration</p>
-                        <p class="text-[9px] neon-cyan font-bold">{{ room.trade_duration }} MIN</p>
-                    </div>
-
-                    <div class="bg-[#12121a] border border-[#2a2a3a] p-3">
-                        <p class="text-[7px] text-gray-600 uppercase">Status</p>
-                        <p class="text-[9px] neon-green font-bold">
-                            <span class="inline-block w-2 h-2 bg-[#00ff88] rounded-full mr-1" style="box-shadow: 0 0 6px #00ff88;"></span>
-                            WAITING
-                        </p>
-                    </div>
-                </div>
-
-                <a href="{% url 'join_room' room.id %}"
-                   class="pixel-btn pixel-btn-cyan block w-full py-3 text-[9px] font-bold text-center rounded-none">
-                    JOIN
-                </a>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
         {% else %}
-        <div class="flex flex-col items-center justify-center py-12 text-center">
-            
-            <h3 class="text-sm text-white mb-2">NO GAMES YET</h3>
-            <p class="text-[8px] text-gray-500">Be the first to host a match!</p>
-        </div>
+            <div class="bg-[#0a0a0f] border-2 border-[#2a2a3a] p-6 text-center">
+                <p class="text-[9px] text-gray-500">No public rooms are open right now.</p>
+            </div>
         {% endif %}
     </div>
 </div>
