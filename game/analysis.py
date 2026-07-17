@@ -6,6 +6,17 @@ def analyze(investments):
     profit/loss per player.
     """
 
+    investments = list(
+        investments
+        .select_related("asset", "room", "player")
+        .order_by("id")
+    )
+    seed = "|".join(
+        f"{inv.room_id}:{inv.id}:{inv.player_id}:{inv.asset_id}:{inv.amount}"
+        for inv in investments
+    )
+    rng = random.Random(seed)
+
     profit_map = {}
     good = []
     bad = []
@@ -20,20 +31,20 @@ def analyze(investments):
 
         # ----- VOLATILITY -----
         if asset.risk_level == "LOW":
-            volatility = random.uniform(-0.03, 0.03)
+            volatility = rng.uniform(-0.03, 0.03)
         elif asset.risk_level in ["MEDIUM", "MED"]:
-            volatility = random.uniform(-0.07, 0.07)
+            volatility = rng.uniform(-0.07, 0.07)
         else:
-            volatility = random.uniform(-0.15, 0.15)
+            volatility = rng.uniform(-0.15, 0.15)
 
         # ----- TIME COMPRESSION -----
         room = inv.room
         if room.trade_duration == 5:
-            time_factor = random.uniform(0.5, 1.0)
+            time_factor = rng.uniform(0.5, 1.0)
         elif room.trade_duration == 10:
-            time_factor = random.uniform(1.0, 1.5)
+            time_factor = rng.uniform(1.0, 1.5)
         else:
-            time_factor = random.uniform(1.5, 2.0)
+            time_factor = rng.uniform(1.5, 2.0)
 
         # ----- FUTURE PRICE -----
         future_price = base_price * (1 + trend * time_factor + volatility)
