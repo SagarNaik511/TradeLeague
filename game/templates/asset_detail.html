@@ -64,6 +64,7 @@
                     <div class="flex items-center gap-3">
                         <h2 class="text-[9px] text-white font-bold">ADVANCED CHART</h2>
                         <span class="text-[7px] text-gray-600">TradingView</span>
+                        <button type="button" onclick="toggleTradingViewHelp(true)" class="w-5 h-5 border border-pixel-cyan text-pixel-cyan hover:bg-pixel-cyan hover:text-pixel-bg transition text-[9px]" aria-label="TradingView chart help" title="Chart help">?</button>
                     </div>
                     <div class="text-[7px] text-gray-600">RSI • MACD • VOL</div>
                 </div>
@@ -256,63 +257,13 @@
 
     </div>
 </div>
+{% include "includes/tradingview_game_help_modal.html" %}
 {% endblock %}
 
 {% block extra_js %}
+{% include "includes/tradingview_chart_script.html" %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
-    // ====== SYMBOL MAP — unique chart per stock ======
-    const symbolMap = {
-        "Reliance Industries": "BSE:RELIANCE",
-        "TCS":                 "BSE:TCS",
-        "Adani Ports":         "BSE:ADANIPORTS",
-        "HDFC Bank":           "BSE:HDFCBANK",
-        "Zomato":              "BSE:ZOMATO",
-        "Infosys":             "BSE:INFY",
-        "Paytm":               "BSE:PAYTM",
-        "Byju's":              "NASDAQ:AAPL",
-        "Yes Bank":            "BSE:YESBANK",
-        "Gold ETF":            "TVC:GOLD",
-        "TechNova":            "NASDAQ:NVDA",
-        "GreenEnergy":         "NSE:TATAPOWER",
-        "AgroFuture":          "NSE:ITC",
-        "SagarCorp":           "BSE:LT",
-        "NithinLtd":           "NASDAQ:TSLA",
-        "FinEdge Bank":        "BSE:ICICIBANK",
-        "Quantum Motors":      "BSE:TATAMOTORS",
-    };
-
-    const assetName = "{{ asset.name }}";
-    const tvSymbol = symbolMap[assetName] || "BSE:SENSEX";
-
-    // ====== TradingView Advanced Chart Widget ======
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": tvSymbol,
-        "interval": "D",
-        "timezone": "Asia/Kolkata",
-        "theme": "dark",
-        "style": "1",
-        "locale": "en",
-        "toolbar_bg": "#0a0a0f",
-        "enable_publishing": false,
-        "hide_side_toolbar": false,
-        "allow_symbol_change": false,
-        "details": true,
-        "hotlist": false,
-        "calendar": false,
-        "studies": [
-            "RSI@tv-basicstudies",
-            "MACD@tv-basicstudies",
-            "MASimple@tv-basicstudies"
-        ],
-        "container_id": "tradingview-widget",
-        "backgroundColor": "#0a0a0f",
-        "gridColor": "#2a2a3a",
-        "hide_top_toolbar": false,
-        "save_image": false,
-    });
 
     // ====== Projected Price ======
     const basePrice = {{ asset.base_price }};

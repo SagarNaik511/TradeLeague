@@ -2,142 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TradeLeague</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeLeague — Enter the Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
     <style>
-        * { font-family: 'Press Start 2P', cursive !important; }
-
-        .grid-bg {
-            background-image:
-                linear-gradient(to right, rgba(0,255,136,0.06) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0,255,136,0.06) 1px, transparent 1px);
-            background-size: 40px 40px;
-            animation: gridMove 8s linear infinite;
-        }
-        @keyframes gridMove {
-            from { background-position: 0 0; }
-            to { background-position: 80px 80px; }
-        }
-
-        .neon-green { color: #00ff88; text-shadow: 0 0 20px rgba(0,255,136,0.6), 0 0 40px rgba(0,255,136,0.3); }
-        .neon-cyan { color: #00e5ff; text-shadow: 0 0 20px rgba(0,229,255,0.6); }
-
-        .scanlines::after {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-            pointer-events: none;
-            z-index: 9999;
-        }
-
-        .pixel-card {
-            background: #12121a;
-            border: 4px solid #2a2a3a;
-            box-shadow: 12px 12px 0 rgba(0,0,0,0.5), 0 0 60px rgba(0,255,136,0.08);
-        }
-
-        .chart-line {
-            position: absolute;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #00ff88, transparent);
-            opacity: 0.3;
-            animation: chartWave 6s ease-in-out infinite;
-        }
-        .chart-line:nth-child(1) { top: 30%; width: 200%; left: -50%; animation-duration: 10s; }
-        .chart-line:nth-child(2) { top: 50%; width: 200%; left: -50%; animation-duration: 14s; animation-delay: 2s; }
-        .chart-line:nth-child(3) { top: 70%; width: 200%; left: -50%; animation-duration: 18s; animation-delay: 4s; opacity: 0.15; }
-        @keyframes chartWave {
-            0% { transform: translateX(-30%) scaleY(1); }
-            50% { transform: translateX(30%) scaleY(3); }
-            100% { transform: translateX(-30%) scaleY(1); }
-        }
-
-        .pixel-btn {
-            border: 3px solid;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.15s;
-        }
-        .pixel-btn:hover { transform: translateY(-3px); filter: brightness(1.2); }
+        * { box-sizing: border-box; font-family: 'Press Start 2P', cursive !important; }
+        body { background: #070a0f; color: #edf9f2; margin: 0; }
+        .arena { background-image: linear-gradient(rgba(0, 255, 136, .055) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, .04) 1px, transparent 1px), radial-gradient(circle at 50% 45%, rgba(0, 229, 255, .12), transparent 33%); background-size: 48px 48px, 48px 48px, auto; }
+        .arena::before { background: linear-gradient(90deg, transparent, rgba(0,255,136,.22), transparent); content: ''; height: 1px; left: 0; position: absolute; right: 0; top: 42%; box-shadow: 0 180px 0 rgba(0,229,255,.12); }
+        .scanlines::after { background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.09) 3px, rgba(0,0,0,.09) 5px); content: ''; inset: 0; pointer-events: none; position: fixed; z-index: 50; }
+        .hud { background: rgba(10, 14, 22, .9); border-bottom: 2px solid #293448; }
+        .brand-mark { align-items: center; background: #00ff88; box-shadow: 3px 3px 0 #006a39; color: #07110b; display: inline-flex; font-size: 10px; height: 29px; justify-content: center; width: 29px; }
+        .neon-green { color: #00ff88; text-shadow: 0 0 14px rgba(0,255,136,.65); }
+        .neon-cyan { color: #00e5ff; text-shadow: 0 0 14px rgba(0,229,255,.65); }
+        .neon-gold { color: #ffd700; text-shadow: 0 0 14px rgba(255,215,0,.55); }
+        .status-dot { animation: pulse 1.5s infinite; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; height: 7px; width: 7px; }
+        @keyframes pulse { 50% { opacity: .35; transform: scale(.72); } }
+        .hero-title { font-size: clamp(34px, 5.4vw, 78px); line-height: 1.27; text-shadow: 6px 6px 0 rgba(0,0,0,.35); }
+        .arena-card { background: rgba(14, 19, 29, .92); border: 2px solid #2b3648; box-shadow: 7px 7px 0 rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,255,136,.06); }
+        .mission-card { background: linear-gradient(135deg, rgba(0,255,136,.1), rgba(0,229,255,.04) 65%), #111824; border: 2px solid #00ff88; box-shadow: 0 0 26px rgba(0,255,136,.13); }
+        .stat-card { background: rgba(11, 15, 23, .8); border: 1px solid #2b3648; }
+        .pixel-btn { border: 3px solid; display: inline-flex; font-size: 10px; justify-content: center; letter-spacing: 1px; padding: 17px 24px; transition: transform .15s, filter .15s; }
+        .pixel-btn:hover { filter: brightness(1.22); transform: translateY(-3px); }
         .pixel-btn:active { transform: translateY(1px); }
-
-        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .blink { animation: blink 1.5s infinite; }
-
-        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .float { animation: float 4s ease-in-out infinite; }
+        .market-track { animation: ticker 30s linear infinite; display: flex; width: max-content; }
+        .market-segment { flex: none; padding-right: 56px; white-space: nowrap; }
+        @keyframes ticker { to { transform: translateX(-50%); } }
+        @media (max-width: 1023px) { .arena { height: auto; min-height: 100dvh; overflow: auto; } .arena::before { display: none; } }
     </style>
 </head>
+<body class="scanlines">
+    <main class="arena relative h-[100dvh] overflow-hidden">
+        <header class="hud relative z-10 flex items-center justify-between px-5 py-4 sm:px-8">
+            <a href="{% url 'intro' %}" class="flex items-center gap-3" aria-label="TradeLeague home">
+                <span class="brand-mark">TL</span>
+                <span class="text-[11px] tracking-wide"><span class="neon-green">TRADE</span><span class="neon-cyan">LEAGUE</span></span>
+            </a>
+            <a href="{% url 'login' %}" class="text-[8px] neon-cyan hover:underline">LOGIN &gt;</a>
+        </header>
 
-<body class="relative min-h-screen overflow-hidden bg-[#0a0a0f] text-white scanlines grid-bg">
+        <div class="relative z-10 mx-auto grid max-w-7xl gap-10 px-6 pb-8 pt-10 lg:grid-cols-[1.2fr_.8fr] lg:items-center lg:px-10 lg:pt-16">
+            <section>
+                <p class="mb-5 text-[8px] tracking-[.22em] neon-cyan">/// THE VIRTUAL TRADING ARENA</p>
+                <h1 class="hero-title">TRADE.<br><span class="neon-green">BATTLE.</span><br><span class="neon-cyan">CONQUER.</span></h1>
+                <p class="mt-7 max-w-xl text-[9px] leading-loose text-gray-400">Read the market, build your virtual portfolio, and outplay your opponents in fast 1v1 trading battles.</p>
 
-    <!-- Animated chart lines -->
-    <div class="absolute inset-0 overflow-hidden">
-        <div class="chart-line"></div>
-        <div class="chart-line"></div>
-        <div class="chart-line"></div>
-    </div>
-
-    <!-- Corner decorations -->
-    <div class="absolute top-6 left-6 text-[8px] text-gray-600">SYS:ONLINE</div>
-    <!-- Main Card -->
-    <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
-        <div class="pixel-card rounded-none px-12 py-14 text-center max-w-xl w-full">
-
-            <!-- Pixel art coins -->
-            <div class="text-xl mb-6 float neon-green font-bold tracking-widest">$$$</div>
-
-            <!-- Title -->
-            <h1 class="text-2xl mb-2">
-                <span class="neon-green">TRADE</span><span class="neon-cyan">LEAGUE</span>
-            </h1>
-
-            <div class="w-32 h-1 bg-gradient-to-r from-transparent via-[#00ff88] to-transparent mx-auto my-4"></div>
-
-            <p class="text-gray-400 text-[9px] mb-10 leading-relaxed">
-                GAMIFIED VIRTUAL STOCK<br>TRADING LEAGUE
-            </p>
-
-            <!-- Stats bar -->
-            <div class="flex justify-center gap-6 mb-10 text-[7px]">
-                <div class="text-center">
-                    <div class="neon-green text-sm">9+</div>
-                    <div class="text-gray-500 mt-1">STOCKS</div>
+                <div class="mt-9">
+                    <a href="{% url 'register' %}" class="pixel-btn border-[#00cc6a] bg-[#00ff88] text-[#07110b] shadow-[0_5px_0_#008b4a,0_0_22px_rgba(0,255,136,.3)]">START PLAYING</a>
                 </div>
-                <div class="text-gray-600">|</div>
-                <div class="text-center">
-                    <div class="neon-cyan text-sm">1v1</div>
-                    <div class="text-gray-500 mt-1">BATTLES</div>
+            </section>
+
+            <aside class="arena-card p-4 sm:p-6">
+                <div class="flex items-center justify-between border-b-2 border-[#2b3648] pb-4 text-[8px]">
+                    <span class="text-gray-400">PLAYER TERMINAL</span>
+                    <span class="neon-green">READY</span>
                 </div>
-                <div class="text-gray-600">|</div>
-                <div class="text-center">
-                    <div style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);" class="text-sm">₹0</div>
-                    <div class="text-gray-500 mt-1">REAL MONEY</div>
+                <div class="mission-card mt-5 p-5">
+                    <p class="text-[7px] text-[#87a6ac]">NEXT MISSION</p>
+                    <h2 class="mt-4 text-[14px] leading-loose neon-green">CLAIM THE<br>MARKET CROWN</h2>
+                    <p class="mt-4 text-[8px] leading-loose text-gray-400">Create a profile, choose your strategy, and enter your first match.</p>
+                    <div class="mt-5 flex items-center gap-2 text-[7px] text-[#87a6ac]"><span class="h-2 w-2 bg-[#00e5ff]"></span> TRAINING MODE ACTIVE</div>
                 </div>
-            </div>
-
-            <!-- Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4">
-                <a href="{% url 'login' %}"
-                   class="pixel-btn flex-1 py-4 rounded-none text-[10px] font-bold text-center"
-                   style="background:#00ff88; border-color:#00cc6a; color:#0a0a0f; box-shadow: 0 4px 0 #009950, 0 0 20px rgba(0,255,136,0.3);">
-                    LOGIN
-                </a>
-
-                <a href="{% url 'register' %}"
-                   class="pixel-btn flex-1 py-4 rounded-none text-[10px] font-bold text-center"
-                   style="background:transparent; border-color:#00e5ff; color:#00e5ff; box-shadow: 0 4px 0 #006677;">
-                    + SIGN UP
-                </a>
-            </div>
-
-            <p class="text-gray-600 text-[7px] mt-8">
-                NO REAL MONEY • REAL STRATEGY • REAL FUN
-            </p>
+                <div class="mt-5 grid grid-cols-2 gap-3 text-[7px]">
+                    <div class="stat-card p-4"><p class="text-gray-500">MODE</p><p class="mt-3 neon-cyan">1V1 DUEL</p></div>
+                    <div class="stat-card p-4"><p class="text-gray-500">OBJECTIVE</p><p class="mt-3 neon-gold">TOP PROFIT</p></div>
+                </div>
+                <p class="mt-6 text-center text-[7px] leading-loose text-gray-600">NO REAL MONEY • REAL STRATEGY • REAL FUN</p>
+            </aside>
         </div>
-    </div>
+
+        <div class="absolute bottom-0 left-0 right-0 overflow-hidden border-t border-[#263346] bg-[#090f17]/90 py-3 text-[7px] text-gray-500">
+            <div class="market-track">
+                <div class="market-segment">RELIANCE <span class="neon-green">+4.2%</span>　 TCS <span class="neon-green">+3.1%</span>　 HDFC <span class="neon-cyan">+2.8%</span>　 ZOMATO <span class="neon-green">+6.5%</span>　 ADANI <span class="text-[#ff4d75]">-2.4%</span>　 RELIANCE <span class="neon-green">+4.2%</span>　 TCS <span class="neon-green">+3.1%</span>　 HDFC <span class="neon-cyan">+2.8%</span>　 ZOMATO <span class="neon-green">+6.5%</span>　 ADANI <span class="text-[#ff4d75]">-2.4%</span>　 RELIANCE <span class="neon-green">+4.2%</span>　 TCS <span class="neon-green">+3.1%</span>　 HDFC <span class="neon-cyan">+2.8%</span>　 ZOMATO <span class="neon-green">+6.5%</span>　 ADANI <span class="text-[#ff4d75]">-2.4%</span></div>
+                <div class="market-segment" aria-hidden="true">RELIANCE <span class="neon-green">+4.2%</span>　 TCS <span class="neon-green">+3.1%</span>　 HDFC <span class="neon-cyan">+2.8%</span>　 ZOMATO <span class="neon-green">+6.5%</span>　 ADANI <span class="text-[#ff4d75]">-2.4%</span>　 RELIANCE <span class="neon-green">+4.2%</span>　 TCS <span class="neon-green">+3.1%</span>　 HDFC <span class="neon-cyan">+2.8%</span>　 ZOMATO <span class="neon-green">+6.5%</span>　 ADANI <span class="text-[#ff4d75]">-2.4%</span>　 RELIANCE <span class="neon-green">+4.2%</span>　 TCS <span class="neon-green">+3.1%</span>　 HDFC <span class="neon-cyan">+2.8%</span>　 ZOMATO <span class="neon-green">+6.5%</span>　 ADANI <span class="text-[#ff4d75]">-2.4%</span></div>
+            </div>
+        </div>
+    </main>
 </body>
 </html>

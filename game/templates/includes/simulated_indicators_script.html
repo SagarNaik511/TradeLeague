@@ -1,0 +1,34 @@
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const basePrice = {{ asset.base_price }};
+    const growth = {{ asset.growth_percent }};
+    const riskLevel = "{{ asset.risk_level|escapejs }}";
+    const projected = basePrice * (1 + growth / 100);
+    ["projected-price", "projected-price-sidebar"].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "₹" + projected.toFixed(2);
+    });
+
+    const setIndicator = function (id, text, signalClass) {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = text; el.className = "indicator-pill " + signalClass; }
+    };
+    const rsi = growth > 3 ? 72 : growth > 0 ? 54 : 32;
+    if (rsi > 70) setIndicator("rsi-signal", "Overbought (" + rsi + ")", "sell-signal");
+    else if (rsi < 30) setIndicator("rsi-signal", "Oversold (" + rsi + ")", "buy-signal");
+    else setIndicator("rsi-signal", "Neutral (" + rsi + ")", "neutral-signal");
+
+    setIndicator("macd-signal", growth > 2 ? "Bullish Cross" : growth < -2 ? "Bearish Cross" : "Converging", growth > 2 ? "buy-signal" : growth < -2 ? "sell-signal" : "neutral-signal");
+    setIndicator("ma-signal", growth > 0 ? "Above MA20" : "Below MA20", growth > 0 ? "buy-signal" : "sell-signal");
+    setIndicator("bb-signal", riskLevel === "HIGH" ? "Near Upper Band" : riskLevel === "LOW" ? "Near Lower Band" : "Mid Band", riskLevel === "HIGH" ? "sell-signal" : riskLevel === "LOW" ? "buy-signal" : "neutral-signal");
+    setIndicator("vol-signal", Math.abs(growth) > 4 ? "High Volume" : "Average", Math.abs(growth) > 4 ? (growth > 0 ? "buy-signal" : "sell-signal") : "neutral-signal");
+
+    const indicators = document.querySelectorAll("#tech-indicators .indicator-pill");
+    let buyCount = 0, sellCount = 0;
+    indicators.forEach(function (el) { if (el.classList.contains("buy-signal")) buyCount++; if (el.classList.contains("sell-signal")) sellCount++; });
+    setIndicator("overall-signal", buyCount > sellCount ? "BUY (" + buyCount + "/5)" : sellCount > buyCount ? "SELL (" + sellCount + "/5)" : "HOLD", buyCount > sellCount ? "buy-signal text-sm" : sellCount > buyCount ? "sell-signal text-sm" : "neutral-signal text-sm");
+
+    const needle = document.getElementById("risk-needle");
+    if (needle) needle.style.transform = "rotate(" + (riskLevel === "LOW" ? -60 : riskLevel === "MEDIUM" ? 0 : 60) + "deg)";
+});
+</script>

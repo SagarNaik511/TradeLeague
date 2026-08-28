@@ -1,0 +1,13 @@
+<div class="pixel-card overflow-hidden p-0">
+    <div class="flex items-center justify-between px-5 py-3 border-b-2 border-[#2a2a3a]">
+        <div class="flex items-center gap-3">
+            <h2 class="text-[9px] text-white font-bold">ADVANCED CHART</h2>
+            <span class="text-[7px] text-gray-600">TradingView</span>
+            <button type="button" onclick="toggleTradingViewHelp(true)" class="w-5 h-5 border border-pixel-cyan text-pixel-cyan hover:bg-pixel-cyan hover:text-pixel-bg transition text-[9px]" aria-label="TradingView chart help" title="Chart help">?</button>
+        </div>
+        <div class="text-[7px] text-gray-600">RSI • MACD • VOL</div>
+    </div>
+    <div id="tradingview-widget" style="height: 500px;"></div>
+</div>
+
+{% include "includes/tradingview_help_modal.html" %}

@@ -1,0 +1,36 @@
+<script>
+window.tradeLeagueSymbolMap = {
+    "Reliance Industries": "BSE:RELIANCE",
+    "TCS":                 "BSE:TCS",
+    "Adani Ports":         "BSE:ADANIPORTS",
+    "HDFC Bank":           "BSE:HDFCBANK",
+    "Zomato":              "BSE:ZOMATO",
+    "Infosys":             "BSE:INFY",
+    "Paytm":               "BSE:PAYTM",
+    "Byju's":              "NASDAQ:AAPL",
+    "Yes Bank":            "BSE:YESBANK",
+    "Gold ETF":            "TVC:GOLD",
+    "TechNova":            "NASDAQ:NVDA",
+    "GreenEnergy":         "NSE:TATAPOWER",
+    "AgroFuture":          "NSE:ITC",
+    "SagarCorp":           "BSE:LT",
+    "NithinLtd":           "NASDAQ:TSLA",
+    "FinEdge Bank":        "BSE:ICICIBANK",
+    "Quantum Motors":      "BSE:TATAMOTORS",
+};
+
+window.createTradeLeagueChart = function (containerId, assetName, interval, studies) {
+    const container = document.getElementById(containerId);
+    if (!container || !window.TradingView) return;
+    const tvSymbol = window.tradeLeagueSymbolMap[assetName] || "BSE:SENSEX";
+    new TradingView.widget({
+        "autosize": true, "symbol": tvSymbol, "interval": interval || "D", "timezone": "Asia/Kolkata",
+        "theme": "dark", "style": "1", "locale": "en", "toolbar_bg": "#0a0a0f",
+        "enable_publishing": false, "hide_side_toolbar": false, "allow_symbol_change": false,
+        "details": true, "hotlist": false, "calendar": false,
+        "studies": studies || ["RSI@tv-basicstudies", "MACD@tv-basicstudies", "MASimple@tv-basicstudies"],
+        "container_id": containerId, "backgroundColor": "#0a0a0f", "gridColor": "#2a2a3a",
+        "hide_top_toolbar": false, "save_image": false,
+    });
+};
+</script>

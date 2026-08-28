@@ -1,0 +1,13 @@
+{% include "includes/tradingview_widget_factory.html" %}
+<script>
+function toggleTradingViewHelp(show) {
+    const modal = document.getElementById("tradingview-help-modal");
+    modal.classList.toggle("hidden", !show);
+    modal.classList.toggle("flex", show);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const assetName = "{{ asset.name|escapejs }}";
+    window.createTradeLeagueChart("tradingview-widget", assetName);
+});
+</script>

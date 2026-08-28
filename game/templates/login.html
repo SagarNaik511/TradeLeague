@@ -1,79 +1,122 @@
 {% extends "base.html" %}
+{% load socialaccount %}
 
 {% block title %}Login - TradeLeague{% endblock %}
 
+{% block extra_css %}
+<style>
+    .trade-login { background: #0a0a0f; height: 100dvh; min-height: 0; overflow: hidden; }
+    .trade-login > section { min-height: 100%; }
+    .trade-login-panel { background: radial-gradient(circle at 50% 53%, rgba(0, 255, 136, .11), transparent 33%), #0a0a0f; border-right: 3px solid #2a2a3a; }
+    .trade-login-brand { font-size: 14px; letter-spacing: 1px; }
+    .trade-login-mark { align-items: center; background: #00ff88; box-shadow: 3px 3px 0 #006e3a; color: #0a0a0f; display: inline-flex; font-size: 13px; height: 31px; justify-content: center; width: 31px; }
+    .trade-login-quote { color: #f2f2f2; font-size: clamp(27px, 3.8vw, 55px); line-height: 1.35; max-width: 650px; }
+    .trade-login-copy { color: #8b8b9f; font-size: 10px; line-height: 2; max-width: 450px; }
+    .trade-login-card { width: min(100%, 485px); }
+    .trade-login-eyebrow { color: #00e5ff; font-size: 8px; letter-spacing: 2px; }
+    .trade-login-title { color: #fff; font-size: 21px; line-height: 1.5; }
+    .trade-login-subtitle { color: #828293; font-size: 9px; }
+    .trade-login-label { color: #a1a1b0; display: block; font-size: 8px; margin-bottom: 8px; text-transform: uppercase; }
+    .trade-login-input { height: 54px; }
+    .trade-login .trade-login-input { background: #12121a !important; color: #00ff88 !important; }
+    .password-field { position: relative; }
+    .password-field .trade-login-input { padding-right: 52px; }
+    .password-toggle { align-items: center; color: #00e5ff; display: flex; height: 54px; justify-content: center; position: absolute; right: 0; top: 0; width: 50px; }
+    .password-toggle:hover { color: #00ff88; }
+    .password-toggle svg { height: 18px; transition: transform .2s ease; width: 18px; }
+    .password-toggle .eye-slash { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .2s ease; }
+    .password-toggle.is-visible svg { transform: scale(.88) rotate(-8deg); }
+    .password-toggle.is-visible .eye-slash { stroke-dashoffset: 0; }
+    .trade-login-submit { font-size: 10px; min-height: 52px; }
+    .trade-login-separator { align-items: center; color: #737384; display: flex; font-size: 8px; gap: 16px; }
+    .trade-login-separator::before, .trade-login-separator::after { background: #2a2a3a; content: ''; flex: 1; height: 2px; }
+    .trade-oauth { align-items: center; background: #12121a; border: 2px solid #2a2a3a; color: #f1f1f1; display: flex; font-size: 9px; justify-content: center; min-height: 54px; transition: all .15s; width: 100%; }
+    .trade-oauth:hover:not(:disabled) { border-color: #00e5ff; box-shadow: 0 0 16px rgba(0, 229, 255, .18); transform: translateY(-2px); }
+    .trade-oauth:disabled { cursor: not-allowed; opacity: .55; }
+    .trade-oauth svg { height: 20px; margin-right: 11px; width: 20px; }
+    .trade-login-note { color: #737384; font-size: 8px; line-height: 1.7; }
+    @media (max-width: 1023px) { .trade-login-panel { display: none; } }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="flex items-center justify-center min-h-[calc(100vh-120px)]">
-    <div class="w-full max-w-md px-4">
-        <div class="pixel-card rounded-none p-8">
-            
-            <div class="text-center mb-8">
-                <h1 class="text-lg mb-1">
-                    <span class="neon-green">LOGIN</span>
-                </h1>
-                <div class="w-20 h-[2px] bg-[#00ff88] mx-auto mt-2 opacity-50"></div>
-            </div>
+<div class="trade-login grid lg:grid-cols-[55%_45%]">
+    <section class="trade-login-panel min-h-screen flex flex-col px-[8%] py-12">
+        <a href="{% url 'intro' %}" class="flex items-center gap-3 w-fit">
+            <span class="trade-login-mark">TL</span>
+            <span class="trade-login-brand neon-green">TRADE<span class="neon-cyan">LEAGUE</span></span>
+        </a>
 
-            <form method="post" class="space-y-6">
+        <div class="my-auto pb-10">
+            <h1 class="trade-login-quote"><span class="neon-green">&gt;</span> WELCOME<br><span class="neon-cyan">BACK, TRADER.</span></h1>
+            <p class="trade-login-copy mt-9">Your next match is waiting.</p>
+        </div>
+    </section>
+
+    <section class="min-h-screen flex items-center justify-center px-6 py-12 sm:px-12 lg:px-16">
+        <div class="trade-login-card">
+            <p class="trade-login-eyebrow">WELCOME BACK, TRADER</p>
+            <h1 class="trade-login-title mt-4">SIGN IN TO YOUR<br><span class="neon-green">TRADING DESK</span></h1>
+            <p class="trade-login-subtitle mt-3">Your next match is waiting.</p>
+
+            <form method="post" class="mt-9 space-y-5">
                 {% csrf_token %}
-
                 <div>
-                    <label for="{{ form.username.id_for_label }}" class="block text-[8px] text-gray-500 mb-2 uppercase tracking-wider">
-                        &gt; Username
-                    </label>
-                    <input 
-                        type="text" 
-                        name="username" 
-                        id="{{ form.username.id_for_label }}"
-                        placeholder="enter_username"
-                        autocomplete="on"
-                        class="w-full px-4 py-3 rounded-none"
-                        required
-                    />
+                    <label for="{{ form.username.id_for_label }}" class="trade-login-label">&gt; Username</label>
+                    <input type="text" name="username" id="{{ form.username.id_for_label }}" placeholder="enter_username" autocomplete="username" class="trade-login-input w-full px-4" required autofocus>
                 </div>
-
                 <div>
-                    <label for="{{ form.password.id_for_label }}" class="block text-[8px] text-gray-500 mb-2 uppercase tracking-wider">
-                        &gt; Password
-                    </label>
-                    <input 
-                        type="password" 
-                        name="password" 
-                        id="{{ form.password.id_for_label }}"
-                        placeholder="••••••••"
-                        autocomplete="off"
-                        class="w-full px-4 py-3 rounded-none"
-                        required
-                    />
+                    <label for="{{ form.password.id_for_label }}" class="trade-login-label">&gt; Password</label>
+                    <div class="password-field">
+                        <input type="password" name="password" id="{{ form.password.id_for_label }}" placeholder="••••••••" autocomplete="current-password" class="trade-login-input w-full px-4" required>
+                        <button type="button" class="password-toggle" data-password-toggle="{{ form.password.id_for_label }}" aria-label="Show password" title="Show password">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/><path class="eye-slash" d="M4 4 20 20"/></svg>
+                        </button>
+                    </div>
                 </div>
-
                 {% if form.non_field_errors %}
                     <div class="border-2 border-[#ff005c] bg-[#ff005c]/10 p-3">
-                        {% for error in form.non_field_errors %}
-                            <p class="neon-magenta text-[8px]">{{ error }}</p>
-                        {% endfor %}
+                        {% for error in form.non_field_errors %}<p class="neon-magenta text-[8px]">{{ error }}</p>{% endfor %}
                     </div>
                 {% endif %}
-
-                <button type="submit" 
-                    class="pixel-btn pixel-btn-green w-full py-3 text-[9px] font-bold rounded-none">
-                    ENTER GAME
-                </button>
+                <button type="submit" class="pixel-btn pixel-btn-green trade-login-submit w-full">ENTER TRADING DESK</button>
             </form>
 
-            <div class="my-6 flex items-center">
-                <div class="flex-1 border-t-2 border-[#2a2a3a]"></div>
-                <span class="px-3 text-gray-600 text-[8px]">OR</span>
-                <div class="flex-1 border-t-2 border-[#2a2a3a]"></div>
-            </div>
+            <div class="trade-login-separator my-7">OR</div>
 
-            <p class="text-center text-gray-500 text-[8px]">
-                New player? 
-                <a href="{% url 'register' %}" class="neon-cyan hover:underline">
-                    REGISTER HERE
-                </a>
-            </p>
+            {% if google_login_enabled %}
+                <form method="post" action="{% provider_login_url 'google' process='login' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="trade-oauth">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.31v2.77h3.57c2.08-1.92 3.27-4.75 3.27-8.09Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.24 1.06-3.71 1.06-2.87 0-5.3-1.94-6.17-4.55H2.14v2.84A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.83 14.09A6.65 6.65 0 0 1 5.49 12c0-.73.13-1.44.34-2.09V7.07H2.14A11 11 0 0 0 1 12c0 1.77.42 3.45 1.14 4.93l3.69-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.86 6.07l3.69 2.84C6.7 7.32 9.13 5.38 12 5.38Z"/></svg>
+                        CONTINUE WITH GOOGLE
+                    </button>
+                </form>
+            {% else %}
+                <button type="button" class="trade-oauth" disabled title="Add Google OAuth credentials to enable this option">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.31v2.77h3.57c2.08-1.92 3.27-4.75 3.27-8.09Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.24 1.06-3.71 1.06-2.87 0-5.3-1.94-6.17-4.55H2.14v2.84A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.83 14.09A6.65 6.65 0 0 1 5.49 12c0-.73.13-1.44.34-2.09V7.07H2.14A11 11 0 0 0 1 12c0 1.77.42 3.45 1.14 4.93l3.69-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.86 6.07l3.69 2.84C6.7 7.32 9.13 5.38 12 5.38Z"/></svg>
+                    CONTINUE WITH GOOGLE
+                </button>
+                <p class="trade-login-note mt-3">Google sign-in will activate when its Client ID and Secret are added to <code>.env</code>.</p>
+            {% endif %}
+
+            <p class="mt-9 text-center text-gray-500 text-[8px]">NEW PLAYER? <a href="{% url 'register' %}" class="neon-cyan hover:underline">REGISTER HERE</a></p>
         </div>
-    </div>
+    </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        const input = document.getElementById(button.dataset.passwordToggle);
+        const showPassword = input.type === 'password';
+        input.type = showPassword ? 'text' : 'password';
+        button.classList.toggle('is-visible', showPassword);
+        button.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+        button.setAttribute('title', showPassword ? 'Hide password' : 'Show password');
+    });
+});
+</script>
 {% endblock %}

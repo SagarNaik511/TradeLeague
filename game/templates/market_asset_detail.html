@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ asset.name }} Market Intel - TradeLeague{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { border-color: #00ff88; transform: translateY(-1px); }
+    .indicator-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .buy-signal { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+    .sell-signal { background: rgba(255,0,92,0.1); color: #ff005c; border: 1px solid rgba(255,0,92,0.3); }
+    .neutral-signal { background: rgba(255,215,0,0.1); color: #ffd700; border: 1px solid rgba(255,215,0,0.3); }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    #tradingview-widget { overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-center justify-between mb-5">
+        <a href="{% url 'market' %}" class="pixel-btn pixel-btn-outline px-3 py-2 text-[7px]">&lt; BACK TO MARKET</a>
+        <div class="flex items-center gap-2"><span class="pulse-dot bg-[#00ff88]"></span><span class="text-[8px] neon-green font-bold">MARKET VIEW</span></div>
+    </div>
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <p class="text-[7px] neon-cyan">/// COMPANY MARKET INTEL</p>
+            <h1 class="text-lg text-white font-bold mt-2">{{ asset.name }}</h1>
+            <p class="text-[8px] text-gray-500 uppercase mt-2">{{ asset.sector }} • {{ asset.risk_level }} RISK</p>
+        </div>
+        <div class="text-right"><p class="text-lg text-white font-bold">₹{{ asset.base_price|floatformat:2 }}</p><p class="text-[7px] text-gray-600 uppercase">Current / Base Price</p></div>
+    </div>
+
+    <div class="space-y-5">
+        {% include "includes/tradingview_chart.html" %}
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="stat-card pixel-card p-4"><p class="text-[7px] text-gray-600 uppercase">Sector</p><p class="text-[8px] text-white font-bold mt-2">{{ asset.sector }}</p></div>
+            <div class="stat-card pixel-card p-4"><p class="text-[7px] text-gray-600 uppercase">Base Price</p><p class="text-[9px] text-white font-bold mt-2">₹{{ asset.base_price|floatformat:2 }}</p></div>
+            <div class="stat-card pixel-card p-4"><p class="text-[7px] text-gray-600 uppercase">Growth</p><p class="text-[9px] font-bold mt-2 {% if asset.growth_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">{% if asset.growth_percent >= 0 %}+{% endif %}{{ asset.growth_percent|floatformat:1 }}%</p></div>
+            <div class="stat-card pixel-card p-4"><p class="text-[7px] text-gray-600 uppercase">Projected</p><p class="text-[9px] neon-cyan font-bold mt-2" id="projected-price">—</p></div>
+            <div class="stat-card pixel-card p-4"><p class="text-[7px] text-gray-600 uppercase">Risk</p><p class="text-[9px] font-bold mt-2 {% if asset.risk_level == 'LOW' %}neon-green{% elif asset.risk_level == 'MEDIUM' or asset.risk_level == 'MED' %}neon-gold{% else %}text-[#ff005c]{% endif %}">{{ asset.risk_level }}</p></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <section class="pixel-card p-5">
+                <h2 class="text-[9px] neon-cyan font-bold mb-4">SIMULATED TECHNICAL INDICATORS</h2>
+                <div id="tech-indicators" class="space-y-3">
+                    <div class="flex justify-between items-center"><span class="text-[8px] text-gray-500">RSI (14)</span><span class="indicator-pill neutral-signal" id="rsi-signal">...</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[8px] text-gray-500">MACD</span><span class="indicator-pill neutral-signal" id="macd-signal">...</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[8px] text-gray-500">Moving Avg (20)</span><span class="indicator-pill neutral-signal" id="ma-signal">...</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[8px] text-gray-500">Bollinger Bands</span><span class="indicator-pill neutral-signal" id="bb-signal">...</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[8px] text-gray-500">Volume Trend</span><span class="indicator-pill neutral-signal" id="vol-signal">...</span></div>
+                </div>
+                <div class="mt-4 pt-4 border-t-2 border-[#2a2a3a] flex justify-between items-center"><span class="text-[8px] text-gray-500 font-bold">OVERALL SIGNAL</span><span class="indicator-pill neutral-signal" id="overall-signal">—</span></div>
+                <p class="text-[7px] text-gray-600 leading-relaxed mt-5">Signals use TradeLeague's simulated asset growth and risk data for learning only.</p>
+            </section>
+
+            <section class="pixel-card p-5">
+                <h2 class="text-[9px] neon-gold font-bold mb-4">COMPANY NEWS & CONTEXT</h2>
+                <div class="bg-[#0a0a0f] border border-[#2a2a3a] p-4"><p class="text-[8px] text-gray-400 leading-relaxed">{{ asset.info_news_text }}</p></div>
+                <div class="mt-5 space-y-3 text-[7px] text-gray-500 leading-relaxed">
+                    <p>SECTOR SENTIMENT: <span class="text-white">{% if asset.growth_percent > 3 %}BULLISH{% elif asset.growth_percent > 0 %}CAUTIOUSLY OPTIMISTIC{% elif asset.growth_percent > -3 %}WEAKENING{% else %}BEARISH{% endif %}</span></p>
+                    <p>RISK PROFILE: <span class="text-white">{{ asset.risk_level }}</span></p>
+                    <p>VOLUME: <span class="text-white">SIMULATED FROM THE ASSET'S MARKET MOVEMENT.</span></p>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% include "includes/tradingview_chart_script.html" %}
+{% include "includes/simulated_indicators_script.html" %}
+{% endblock %}

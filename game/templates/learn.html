@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Trading Academy - TradeLeague{% endblock %}
+
+{% block extra_css %}
+<style>
+    html { scroll-behavior: smooth; }
+    .academy-nav { scrollbar-width: thin; }
+    .academy-nav a { border: 1px solid #2a2a3a; color: #9a9aad; display: inline-block; font-size: 7px; padding: 9px 11px; white-space: nowrap; }
+    .academy-nav a:hover { border-color: #00e5ff; color: #00e5ff; }
+    .academy-section { scroll-margin-top: 92px; }
+    .academy-section h2 { font-size: 11px; }
+    .academy-copy { color: #a1a1b0; font-size: 8px; line-height: 2; }
+    .academy-label { color: #00e5ff; font-size: 7px; }
+    .academy-card { background: #0a0a0f; border: 2px solid #2a2a3a; padding: 16px; }
+    .academy-card h3 { color: #f2f2f2; font-size: 8px; margin-bottom: 10px; }
+    .academy-card:hover { border-color: #00ff88; }
+    .mini-chart { background: linear-gradient(to bottom, rgba(0,229,255,.05), transparent), #0a0a0f; border: 2px solid #2a2a3a; min-height: 155px; overflow: hidden; position: relative; }
+    .mini-chart::before { background-image: linear-gradient(to right, rgba(0,255,136,.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,255,136,.07) 1px, transparent 1px); background-size: 28px 28px; content: ''; inset: 0; position: absolute; }
+    .candle-row { align-items: end; bottom: 20px; display: flex; gap: 16px; height: 105px; justify-content: center; left: 0; position: absolute; right: 0; }
+    .candle { position: relative; width: 16px; }
+    .candle::before { background: currentColor; content: ''; height: calc(100% + 28px); left: 7px; position: absolute; top: -14px; width: 2px; }
+    .candle-up { background: #00ff88; color: #00ff88; height: 50px; }
+    .candle-down { background: #ff005c; color: #ff005c; height: 42px; }
+    .candle-small { background: #ffd700; color: #ffd700; height: 16px; }
+    .trend-line { fill: none; height: 100%; inset: 0; position: absolute; stroke-width: 3; width: 100%; }
+    .trend-up { stroke: #00ff88; }
+    .trend-down { stroke: #ff005c; }
+    .trend-flat { stroke: #ffd700; }
+    .level-line { border-top: 2px dashed; left: 8%; position: absolute; right: 8%; }
+    .support-line { border-color: #00ff88; bottom: 30%; }
+    .resistance-line { border-color: #ff005c; top: 28%; }
+    .pattern { align-items: center; background: #0a0a0f; border: 2px solid #2a2a3a; display: flex; gap: 12px; min-height: 120px; padding: 14px; }
+    .pattern-visual { align-items: center; display: flex; gap: 7px; height: 75px; justify-content: center; min-width: 76px; }
+    .pattern-candle { position: relative; width: 13px; }
+    .pattern-candle::before { background: currentColor; content: ''; height: calc(100% + 30px); left: 6px; position: absolute; top: -15px; width: 2px; }
+    .green { background: #00ff88; color: #00ff88; }
+    .red { background: #ff005c; color: #ff005c; }
+    .gold { background: #ffd700; color: #ffd700; }
+    .pattern-title { color: #fff; font-size: 8px; }
+    .practice-terminal { background: radial-gradient(circle at 50% 0, rgba(180,77,255,.12), transparent 38%), #12121a; }
+    .practice-visual { align-items: center; background: #0a0a0f; border: 2px solid #2a2a3a; display: flex; justify-content: center; min-height: 155px; overflow: hidden; position: relative; }
+    .practice-option { background: #0a0a0f; border: 2px solid #2a2a3a; color: #d1d1db; font-size: 8px; min-height: 48px; padding: 12px 14px; text-align: left; transition: all .15s; width: 100%; }
+    .practice-option:hover:not(:disabled) { border-color: #00e5ff; color: #00e5ff; transform: translateX(2px); }
+    .practice-option:disabled { cursor: default; }
+    .practice-option.correct { background: rgba(0,255,136,.1); border-color: #00ff88; color: #00ff88; }
+    .practice-option.incorrect { background: rgba(255,0,92,.1); border-color: #ff005c; color: #ff8ab4; }
+    .practice-svg { height: 100%; inset: 0; position: absolute; width: 100%; }
+    .quiz-feedback { border: 2px solid #2a2a3a; font-size: 8px; line-height: 2; padding: 14px; }
+    .quiz-feedback.good { background: rgba(0,255,136,.08); border-color: #00ff88; color: #b7f8d4; }
+    .quiz-feedback.bad { background: rgba(255,0,92,.08); border-color: #ff005c; color: #ffc0d7; }
+    .scenario-terminal { background: radial-gradient(circle at 50% 0, rgba(0,229,255,.10), transparent 38%), #12121a; }
+    .lab-chart { background: #080d12; border: 2px solid #2a2a3a; overflow-x: auto; }
+    .lab-chart svg { display: block; min-width: 620px; width: 100%; }
+    .lab-axis { fill: #737384; font-size: 9px; }
+    .lab-label { fill: #a1a1b0; font-size: 10px; }
+    .lab-grid { stroke: #163039; stroke-width: 1; }
+    .lab-zone-support { fill: rgba(0,255,136,.14); stroke: #00ff88; stroke-dasharray: 5 4; }
+    .lab-zone-resistance { fill: rgba(255,0,92,.14); stroke: #ff005c; stroke-dasharray: 5 4; }
+    .lab-ma { fill: none; stroke: #ffd700; stroke-width: 2.5; }
+    .lab-macd { fill: none; stroke: #00e5ff; stroke-width: 2; }
+    .lab-signal { fill: none; stroke: #ffd700; stroke-width: 2; }
+    .lab-rsi-line { fill: none; stroke: #b44dff; stroke-width: 2.5; }
+    .lab-progress-bar { color: #00e5ff; font-size: 12px; letter-spacing: 2px; }
+    .scenario-choice { border: 3px solid; font-size: 8px; min-height: 50px; padding: 12px; transition: all .15s; width: 100%; }
+    .scenario-choice:hover { transform: translateY(-2px); }
+    .scenario-buy { background: rgba(0,255,136,.09); border-color: #00cc6a; color: #00ff88; }
+    .scenario-wait { background: rgba(0,229,255,.09); border-color: #00b8cc; color: #00e5ff; }
+    .scenario-sell { background: rgba(255,0,92,.09); border-color: #cc004a; color: #ff6b9d; }
+    .scenario-result { background: #0a0a0f; border: 2px solid #2a2a3a; }
+    .scenario-result ul { color: #a1a1b0; font-size: 7px; line-height: 2; }
+    @media (max-width: 640px) { .academy-nav { overflow-x: auto; padding-bottom: 7px; } .pattern { align-items: flex-start; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8 pb-14">
+    <header class="pixel-card p-6 sm:p-8 border-[#00e5ff]">
+        <p class="text-[8px] neon-cyan">/// KNOWLEDGE TERMINAL ONLINE</p>
+        <h1 class="text-lg sm:text-xl text-white mt-4">TRADELEAGUE <span class="neon-green">ACADEMY</span></h1>
+        <p class="academy-copy mt-4 max-w-3xl">Learn the basics of reading charts and understanding the market. Every lesson is for education in TradeLeague's simulated environment.</p>
+    </header>
+
+    <nav class="academy-nav flex gap-2 mt-5 overflow-x-auto" aria-label="Academy sections">
+        <a href="#market-basics">MARKET BASICS</a><a href="#charts">CHARTS</a><a href="#volume">VOLUME</a><a href="#trends">TRENDS</a><a href="#support-resistance">SUPPORT &amp; RESISTANCE</a><a href="#indicators">INDICATORS</a><a href="#candlesticks">CANDLESTICKS</a><a href="#risk">RISK MANAGEMENT</a><a href="#practice">PRACTICE QUIZ</a><a href="#scenario-simulator">PRACTICE LAB</a>
+    </nav>
+
+    <div class="space-y-8 mt-8">
+        <section id="market-basics" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">01 // MARKET BASICS</p><h2 class="text-white mt-3">HOW A MARKET MOVES</h2>
+            <div class="grid md:grid-cols-2 gap-4 mt-5">
+                <article class="academy-card"><h3>WHAT IS THE STOCK MARKET?</h3><p class="academy-copy">A marketplace where people buy and sell pieces of companies. Prices change as buyers and sellers react to information and demand.</p></article>
+                <article class="academy-card"><h3>WHAT IS A STOCK?</h3><p class="academy-copy">A stock is a small ownership share in a company. Buying means you own a small piece; selling means you pass that piece to another buyer.</p></article>
+                <article class="academy-card"><h3>BULL &amp; BEAR MARKETS</h3><p class="academy-copy"><span class="neon-green">Bull market:</span> prices are generally rising. <span class="neon-magenta">Bear market:</span> prices are generally falling. Both describe a broad trend, not what every stock will do.</p></article>
+                <article class="academy-card"><h3>PRICE &amp; MOVEMENT</h3><p class="academy-copy">Price is the latest amount someone paid. It moves when buyers are willing to pay more or sellers accept less. News, results, and expectations can all affect it.</p></article>
+            </div>
+        </section>
+
+        <section id="charts" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">02 // READING A CHART</p><h2 class="text-white mt-3">PRICE, TIME, AND CANDLES</h2>
+            <div class="grid lg:grid-cols-[.9fr_1.1fr] gap-5 mt-5">
+                <div class="mini-chart"><div class="absolute left-3 top-3 text-[7px] text-gray-500">PRICE CHART EXAMPLE</div><div class="candle-row"><span class="candle candle-up"></span><span class="candle candle-down"></span><span class="candle candle-up" style="height:70px"></span><span class="candle candle-small"></span><span class="candle candle-down" style="height:58px"></span></div></div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <article class="academy-card"><h3>WHAT A CHART SHOWS</h3><p class="academy-copy">A chart puts price on the vertical axis and time along the bottom, so you can see how price changed.</p></article>
+                    <article class="academy-card"><h3>CANDLESTICK</h3><p class="academy-copy">Each candle is one selected time period. The body runs from open to close; wicks show the high and low.</p></article>
+                    <article class="academy-card"><h3>O / H / L / C</h3><p class="academy-copy"><b>Open:</b> first price. <b>High:</b> highest. <b>Low:</b> lowest. <b>Close:</b> final price for that period.</p></article>
+                    <article class="academy-card"><h3>BULLISH / BEARISH</h3><p class="academy-copy">A bullish candle closes above its open. A bearish candle closes below its open. One candle alone does not predict the next move.</p></article>
+                    <article class="academy-card sm:col-span-2"><h3>TIMEFRAMES</h3><p class="academy-copy">1m, 30m, 1h, and 1D show one minute, 30 minutes, one hour, or one day per candle. Short timeframes show detail; longer ones help reveal the bigger picture.</p></article>
+                </div>
+            </div>
+        </section>
+
+        <section id="volume" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">03 // VOLUME</p><h2 class="text-white mt-3">HOW MUCH WAS TRADED?</h2>
+            <div class="grid md:grid-cols-3 gap-4 mt-5"><article class="academy-card"><h3>WHAT IS IT?</h3><p class="academy-copy">Volume is the number of shares or units traded during a period.</p></article><article class="academy-card"><h3>HIGH VS LOW</h3><p class="academy-copy">High volume can mean more interest in a move. Low volume can mean less participation.</p></article><article class="academy-card"><h3>HOW TO USE IT</h3><p class="academy-copy">Traders compare volume with price movement for context. It supports an observation; it does not confirm a guaranteed outcome.</p></article></div>
+        </section>
+
+        <section id="trends" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">04 // TRENDS</p><h2 class="text-white mt-3">THE DIRECTION OF PRICE</h2>
+            <div class="grid md:grid-cols-3 gap-4 mt-5">
+                <article class="academy-card"><div class="mini-chart mb-4"><svg class="trend-line trend-up" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="2,88 25,70 42,74 63,44 78,52 98,18"/></svg></div><h3>UPTREND</h3><p class="academy-copy">Price generally makes <b>higher highs</b> and <b>higher lows</b>. It shows upward context, not a promise it will continue.</p></article>
+                <article class="academy-card"><div class="mini-chart mb-4"><svg class="trend-line trend-down" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="2,14 25,31 43,25 62,57 79,50 98,86"/></svg></div><h3>DOWNTREND</h3><p class="academy-copy">Price generally makes <b>lower highs</b> and <b>lower lows</b>. It shows downward context, not certainty.</p></article>
+                <article class="academy-card"><div class="mini-chart mb-4"><svg class="trend-line trend-flat" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="2,52 22,42 42,59 60,45 79,57 98,48"/></svg></div><h3>SIDEWAYS / RANGE</h3><p class="academy-copy">Price moves mostly between two areas without a clear direction. Traders often wait for clearer context.</p></article>
+            </div>
+        </section>
+
+        <section id="support-resistance" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">05 // SUPPORT &amp; RESISTANCE</p><h2 class="text-white mt-3">IMPORTANT PRICE AREAS</h2>
+            <div class="grid lg:grid-cols-[.9fr_1.1fr] gap-5 mt-5"><div class="mini-chart"><span class="level-line resistance-line"></span><span class="level-line support-line"></span><svg class="trend-line trend-up" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="2,78 22,60 35,72 51,38 67,62 82,32 98,50"/></svg><span class="absolute z-10 right-4 top-[22%] text-[7px] neon-magenta">RESISTANCE</span><span class="absolute z-10 right-4 bottom-[24%] text-[7px] neon-green">SUPPORT</span></div><div class="grid gap-4"><article class="academy-card"><h3>SUPPORT</h3><p class="academy-copy">An area where a falling price has often slowed or bounced because buyers showed interest.</p></article><article class="academy-card"><h3>RESISTANCE</h3><p class="academy-copy">An area where a rising price has often slowed because sellers became more active.</p></article><article class="academy-card"><h3>BREAKOUT / BREAKDOWN</h3><p class="academy-copy">A breakout moves above resistance; a breakdown moves below support. These areas are zones, not exact guaranteed prices, and moves can fail.</p></article></div></div>
+        </section>
+
+        <section id="indicators" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">06 // TECHNICAL INDICATORS</p><h2 class="text-white mt-3">EXTRA CLUES, NOT ANSWERS</h2>
+            <div class="grid md:grid-cols-2 gap-4 mt-5"><article class="academy-card"><h3>WHAT IS AN INDICATOR?</h3><p class="academy-copy">An indicator is a calculation shown on or below a chart. It helps organize price data, but it cannot guarantee future prices.</p></article><article class="academy-card"><h3>RSI</h3><p class="academy-copy">RSI shows how strongly price has been moving on a 0–100 scale. Below 30 is commonly called oversold and above 70 overbought. These levels do not guarantee a reversal.</p></article><article class="academy-card"><h3>MACD</h3><p class="academy-copy">MACD compares two moving averages to show momentum. A MACD-line and signal-line crossover can suggest momentum is changing, not guarantee a direction.</p></article><article class="academy-card"><h3>MOVING AVERAGE (MA)</h3><p class="academy-copy">An MA smooths past price data to show the general trend. Price above or below it can provide context, not an automatic buy or sell signal.</p></article></div>
+        </section>
+
+        <section id="candlesticks" class="academy-section pixel-card p-5 sm:p-6">
+            <p class="academy-label">07 // CANDLESTICK PATTERNS</p><h2 class="text-white mt-3">PATTERNS ARE CLUES</h2>
+            <p class="academy-copy mt-3">Patterns describe how candles look. Traders use their location, trend, and volume for context; no pattern guarantees the next move.</p>
+            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
+                <article class="pattern"><div class="pattern-visual"><span class="pattern-candle gold" style="height:5px"></span></div><div><h3 class="pattern-title">DOJI</h3><p class="academy-copy mt-2">Open and close are very close. It can show indecision.</p></div></article>
+                <article class="pattern"><div class="pattern-visual"><span class="pattern-candle green" style="height:18px; margin-top:-20px"></span></div><div><h3 class="pattern-title">HAMMER</h3><p class="academy-copy mt-2">Small body with a long lower wick. After a fall, it can show buyers pushing back.</p></div></article>
+                <article class="pattern"><div class="pattern-visual"><span class="pattern-candle red" style="height:18px; margin-top:20px"></span></div><div><h3 class="pattern-title">SHOOTING STAR</h3><p class="academy-copy mt-2">Small body with a long upper wick. After a rise, it can show selling pressure.</p></div></article>
+                <article class="pattern"><div class="pattern-visual"><span class="pattern-candle red" style="height:20px"></span><span class="pattern-candle green" style="height:52px"></span></div><div><h3 class="pattern-title">BULLISH ENGULFING</h3><p class="academy-copy mt-2">A larger up candle covers a prior down candle. It can suggest buyers gained control.</p></div></article>
+                <article class="pattern"><div class="pattern-visual"><span class="pattern-candle green" style="height:20px"></span><span class="pattern-candle red" style="height:52px"></span></div><div><h3 class="pattern-title">BEARISH ENGULFING</h3><p class="academy-copy mt-2">A larger down candle covers a prior up candle. It can suggest sellers gained control.</p></div></article>
+            </div>
+        </section>
+
+        <section id="risk" class="academy-section pixel-card p-5 sm:p-6 border-[#ffd700]">
+            <p class="text-[8px] neon-gold">08 // RISK MANAGEMENT</p><h2 class="text-white mt-3">PROTECT THE PLAN</h2>
+            <div class="grid md:grid-cols-2 gap-4 mt-5"><article class="academy-card"><h3>RISK VS REWARD</h3><p class="academy-copy">Before a trade, compare what you could lose with what you hope to gain. A good idea can still lose.</p></article><article class="academy-card"><h3>STOP LOSS</h3><p class="academy-copy">A planned exit level that limits loss if price moves against you. It may not always execute at the exact expected price.</p></article><article class="academy-card"><h3>POSITION SIZE</h3><p class="academy-copy">Decide how much of your virtual balance to allocate. Do not risk everything on one trade or one signal.</p></article><article class="academy-card"><h3>TRADING PLAN</h3><p class="academy-copy">Write down why you are entering, where you would exit, and how much you can risk. Indicators and signals are tools, not guarantees.</p></article></div>
+        </section>
+    </div>
+
+    <section id="practice" class="academy-section practice-terminal pixel-card p-5 sm:p-7 mt-8 border-[#b44dff]">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b-2 border-[#2a2a3a] pb-5">
+            <div><p class="text-[8px] text-[#b44dff]">09 // INTERACTIVE PRACTICE</p><h2 class="text-sm text-white mt-3">TEST YOUR TRADING KNOWLEDGE</h2><p class="academy-copy mt-3 max-w-2xl">Choose an answer, read the explanation, then continue. These questions build chart-reading context; they do not predict prices.</p></div>
+            <p id="quiz-progress" class="text-[7px] neon-cyan shrink-0">QUESTION 1 / 10</p>
+        </div>
+
+        <div id="quiz-area" class="grid lg:grid-cols-[.8fr_1.2fr] gap-5 mt-6">
+            <div id="quiz-visual" class="practice-visual" aria-hidden="true"></div>
+            <div>
+                <p class="text-[7px] text-gray-500">PRACTICE QUESTION</p>
+                <h3 id="quiz-question" class="text-[10px] text-white leading-relaxed mt-3"></h3>
+                <div id="quiz-options" class="space-y-3 mt-5"></div>
+                <div id="quiz-feedback" class="quiz-feedback hidden mt-5" aria-live="polite"></div>
+                <button id="quiz-next" type="button" class="pixel-btn pixel-btn-cyan mt-5 px-5 py-3 text-[8px] hidden">NEXT QUESTION</button>
+            </div>
+        </div>
+
+        <div id="quiz-complete" class="hidden text-center py-7" aria-live="polite">
+            <p class="text-[8px] neon-green">/// PRACTICE SESSION SAVED IN THIS BROWSER TAB</p>
+            <h3 class="text-lg text-white mt-4">QUIZ COMPLETE</h3>
+            <p id="quiz-score" class="text-sm neon-cyan mt-5"></p>
+            <p id="quiz-message" class="academy-copy mt-4 max-w-xl mx-auto"></p>
+        </div>
+    </section>
+
+    <section id="scenario-simulator" class="academy-section scenario-terminal pixel-card p-5 sm:p-7 mt-8 border-[#00e5ff]">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b-2 border-[#2a2a3a] pb-5">
+            <div><p class="text-[8px] neon-cyan">10 // GUIDED CHART TRAINING</p><h2 class="text-sm text-white mt-3">TRADING PRACTICE LAB</h2><p class="academy-copy mt-3">Learn to read the chart one step at a time. All charts are hypothetical and educational.</p></div>
+            <div class="text-left sm:text-right"><p id="scenario-progress" class="text-[7px] neon-cyan">SCENARIO 01 / 12</p><p id="scenario-bar" class="lab-progress-bar mt-2">█░░░░░░░░░░░ 1 / 12</p></div>
+        </div>
+        <div id="scenario-area" class="mt-6"><div class="grid lg:grid-cols-[1.25fr_.75fr] gap-5"><div id="scenario-chart" class="lab-chart"></div><div class="pixel-card p-5 self-start"><p class="text-[7px] text-gray-500">SIMULATED LESSON</p><h3 id="scenario-asset" class="text-[11px] text-white mt-3"></h3><p id="scenario-situation" class="academy-copy mt-5"></p></div></div><div id="scenario-decision-area" class="mt-6"><h3 id="scenario-question" class="text-[10px] text-white"></h3><p class="academy-copy mt-2">Use the chart evidence before choosing.</p><div id="scenario-buttons" class="grid sm:grid-cols-3 gap-3 mt-4"></div></div><div id="scenario-result" class="scenario-result hidden p-5 mt-6" aria-live="polite"><div class="grid sm:grid-cols-2 gap-5"><div><p class="text-[7px] text-gray-500">YOUR DECISION</p><p id="scenario-result-choice" class="text-[10px] text-white mt-2"></p><p class="text-[7px] text-gray-500 mt-5">ANALYSIS</p><p id="scenario-assessment" class="text-[9px] mt-2"></p></div><div><p class="text-[7px] text-gray-500">WHY?</p><ul id="scenario-why" class="list-disc pl-4 mt-2"></ul></div></div><div class="border-t-2 border-[#2a2a3a] mt-5 pt-4"><p class="text-[7px] neon-gold">WHAT ACTUALLY HAPPENED ON THE CHART</p><p id="scenario-lesson" class="academy-copy mt-2"></p><p class="text-[7px] neon-cyan mt-4">KEY CONCEPTS</p><div id="scenario-concepts" class="flex flex-wrap gap-2 mt-3"></div></div><button id="scenario-next" type="button" class="pixel-btn pixel-btn-cyan mt-5 px-5 py-3 text-[8px]">NEXT SCENARIO</button></div></div>
+        <div id="scenario-complete" class="hidden text-center py-8" aria-live="polite"><p class="text-[8px] neon-green">/// ALL 12 HYPOTHETICAL CHARTS REVIEWED</p><h3 class="text-lg text-white mt-4">SIMULATION COMPLETE</h3><p id="scenario-final-score" class="text-sm neon-cyan mt-5"></p><p class="academy-copy mt-4 max-w-2xl mx-auto">This educational score is not proof of trading ability, profitability, or future results.</p><div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl mx-auto mt-6 text-left"><p class="academy-card text-[7px] neon-green">✓ CANDLESTICKS &amp; TRENDS</p><p class="academy-card text-[7px] neon-cyan">✓ SUPPORT &amp; RESISTANCE</p><p class="academy-card text-[7px] neon-gold">✓ BREAKOUTS &amp; VOLUME</p><p class="academy-card text-[7px] text-[#b44dff]">✓ RSI &amp; MACD</p><p class="academy-card text-[7px] text-white">✓ MOVING AVERAGE</p><p class="academy-card text-[7px] neon-green">✓ RISK AWARENESS</p></div><div class="flex flex-col sm:flex-row justify-center gap-3 mt-7"><button id="scenario-retry" type="button" class="pixel-btn pixel-btn-outline px-5 py-3 text-[8px]">TRY AGAIN</button><a href="{% url 'lobby' %}" class="pixel-btn pixel-btn-green px-5 py-3 text-[8px]">GO TO GAME ROOM</a><a href="{% url 'market' %}" class="pixel-btn pixel-btn-cyan px-5 py-3 text-[8px]">EXPLORE MARKET</a></div></div>
+    </section>
+
+    <section class="pixel-card p-6 mt-8 text-center border-[#00ff88]">
+        <p class="text-[8px] neon-green">/// READY FOR THE NEXT ROUND</p><h2 class="text-sm text-white mt-3">READY TO TRY IT FOR REAL?</h2><p class="academy-copy mt-4 max-w-2xl mx-auto">You've learned the basics. Now analyze a market chart and practice trading with virtual money.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6"><a href="{% url 'lobby' %}" class="pixel-btn pixel-btn-green px-5 py-3 text-[8px]">GO TO GAME ROOM</a><a href="{% url 'market' %}" class="pixel-btn pixel-btn-cyan px-5 py-3 text-[8px]">EXPLORE MARKET</a></div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const visuals = {
+        candle: '<div class="pattern-visual"><span class="pattern-candle green" style="height:54px"></span></div>',
+        bullish: '<div class="pattern-visual"><span class="pattern-candle green" style="height:48px"></span></div><span class="absolute bottom-3 text-[7px] neon-green">CLOSE &gt; OPEN</span>',
+        trend: '<svg class="practice-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="#00ff88" stroke-width="3" points="3,85 20,68 36,74 54,47 70,55 97,18"/></svg>',
+        support: '<span class="level-line support-line"></span><svg class="practice-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="#00ff88" stroke-width="3" points="3,42 23,61 42,50 60,73 79,58 97,67"/></svg><span class="absolute z-10 right-4 bottom-[24%] text-[7px] neon-green">SUPPORT AREA</span>',
+        resistance: '<span class="level-line resistance-line"></span><svg class="practice-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="#ff005c" stroke-width="3" points="3,75 22,43 42,56 61,31 79,44 97,37"/></svg><span class="absolute z-10 right-4 top-[22%] text-[7px] neon-magenta">RESISTANCE AREA</span>',
+        rsi: '<div class="text-center"><p class="text-[8px] text-gray-500">RSI READING</p><p class="text-3xl neon-gold mt-3">74</p><p class="text-[7px] text-gray-500 mt-3">0 ---------------- 100</p></div>',
+        macd: '<svg class="practice-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="#00e5ff" stroke-width="2" points="3,70 22,58 40,50 58,38 76,28 97,18"/><polyline fill="none" stroke="#ffd700" stroke-width="2" points="3,35 22,42 40,49 58,55 76,62 97,70"/></svg><span class="absolute bottom-3 left-4 text-[7px] neon-cyan">MACD LINE</span><span class="absolute top-3 right-4 text-[7px] neon-gold">SIGNAL LINE</span>',
+        volume: '<div class="absolute bottom-5 flex items-end gap-3"><span class="bg-[#00ff88] w-4 h-8"></span><span class="bg-[#00ff88] w-4 h-14"></span><span class="bg-[#00ff88] w-4 h-10"></span><span class="bg-[#00ff88] w-4 h-20"></span><span class="bg-[#00ff88] w-4 h-12"></span></div>',
+        risk: '<div class="text-center px-6"><p class="text-[8px] neon-gold">RISK MANAGEMENT</p><p class="text-[7px] text-gray-400 mt-4 leading-relaxed">One trade can be wrong. Position size helps protect the rest of your virtual balance.</p></div>',
+        final: '<span class="level-line support-line"></span><svg class="practice-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="#00ff88" stroke-width="3" points="3,85 21,67 39,74 57,48 76,56 97,29"/></svg><span class="absolute z-10 right-4 bottom-[24%] text-[7px] neon-green">SUPPORT</span><span class="absolute top-3 left-4 text-[7px] neon-gold">RSI: 74</span>'
+    };
+    const questions = [
+        { visual: 'candle', question: 'What does the candle body represent?', options: ['Every price ever traded', 'The range between the open and close', 'Only the highest price'], answer: 1, explanation: 'Correct: the body spans from open to close. The wick shows the higher and lower prices reached.' },
+        { visual: 'bullish', question: 'If the closing price is higher than the opening price, what type of candle is this?', options: ['Bearish', 'Doji', 'Bullish'], answer: 2, explanation: 'Correct: a candle that closes above its open is bullish. It describes that period, not a guaranteed next move.' },
+        { visual: 'trend', question: 'What type of trend is shown by these higher highs and higher lows?', options: ['Sideways', 'Uptrend', 'Downtrend'], answer: 1, explanation: 'Correct: higher highs and higher lows commonly describe an uptrend. Trends can still change.' },
+        { visual: 'support', question: 'What is happening around the support area?', options: ['Sellers always control the price', 'Price is guaranteed to rise', 'Buyers are showing interest'], answer: 2, explanation: 'Correct: support is an area where buying interest may slow a fall. It is not a guaranteed bounce.' },
+        { visual: 'resistance', question: 'What do traders commonly watch around a resistance area?', options: ['Only the stock volume', 'Whether sellers slow the rise or price breaks through', 'A guaranteed price fall'], answer: 1, explanation: 'Correct: resistance can be an area where selling pressure appears. A breakout or reversal can both happen.' },
+        { visual: 'rsi', question: 'An RSI reading above 70 is commonly considered what?', options: ['No momentum', 'Potentially oversold', 'Potentially overbought'], answer: 2, explanation: 'Correct: above 70 is commonly called potentially overbought. It does not guarantee that price will fall.' },
+        { visual: 'macd', question: 'What is MACD commonly used to identify?', options: ['Company ownership', 'Momentum and possible momentum changes', 'The exact future price'], answer: 1, explanation: 'Correct: MACD compares moving averages to provide momentum context. Crossovers may suggest change, not certainty.' },
+        { visual: 'volume', question: 'What can higher trading volume generally tell us?', options: ['The company has no risk', 'Price must rise', 'More trading activity and interest'], answer: 2, explanation: 'Correct: higher volume shows more activity. It gives context for a move but does not guarantee direction.' },
+        { visual: 'risk', question: 'Why should a trader avoid putting all their money into one trade?', options: ['To make indicators work', 'To manage risk if that trade goes wrong', 'Because every trade has guaranteed profit'], answer: 1, explanation: 'Correct: position size helps limit the damage from one losing trade. Signals and indicators can be wrong.' },
+        { visual: 'final', question: 'FINAL CHALLENGE: Which summary best fits this example?', options: ['A signal to risk all virtual money', 'A downtrend where price is guaranteed to rise', 'An uptrend with support below; RSI 74 may be overbought but does not guarantee a fall'], answer: 2, explanation: 'Correct: the chart shows higher highs/lows and a support area. RSI 74 provides context only, not a prediction.' }
+    ];
+    let current = 0;
+    let score = 0;
+    const visual = document.getElementById('quiz-visual');
+    const question = document.getElementById('quiz-question');
+    const options = document.getElementById('quiz-options');
+    const feedback = document.getElementById('quiz-feedback');
+    const next = document.getElementById('quiz-next');
+    const progress = document.getElementById('quiz-progress');
+
+    function renderQuestion() {
+        const item = questions[current];
+        visual.innerHTML = visuals[item.visual];
+        question.textContent = item.question;
+        progress.textContent = 'QUESTION ' + (current + 1) + ' / ' + questions.length;
+        options.innerHTML = '';
+        feedback.className = 'quiz-feedback hidden mt-5';
+        next.classList.add('hidden');
+        item.options.forEach(function (option, index) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'practice-option';
+            button.textContent = String.fromCharCode(65 + index) + ' // ' + option;
+            button.addEventListener('click', function () { answerQuestion(index); });
+            options.appendChild(button);
+        });
+    }
+
+    function answerQuestion(selected) {
+        const item = questions[current];
+        const buttons = options.querySelectorAll('button');
+        buttons.forEach(function (button, index) {
+            button.disabled = true;
+            if (index === item.answer) button.classList.add('correct');
+            if (index === selected && index !== item.answer) button.classList.add('incorrect');
+        });
+        const correct = selected === item.answer;
+        if (correct) score += 1;
+        feedback.textContent = (correct ? 'CORRECT // ' : 'NOT QUITE // ') + item.explanation;
+        feedback.className = 'quiz-feedback mt-5 ' + (correct ? 'good' : 'bad');
+        next.textContent = current === questions.length - 1 ? 'VIEW RESULT' : 'NEXT QUESTION';
+        next.classList.remove('hidden');
+    }
+
+    next.addEventListener('click', function () {
+        current += 1;
+        if (current < questions.length) { renderQuestion(); return; }
+        document.getElementById('quiz-area').classList.add('hidden');
+        progress.textContent = 'SESSION COMPLETE';
+        const percent = Math.round((score / questions.length) * 100);
+        let message = 'Keep learning the basics and try the Academy sections again.';
+        if (percent >= 91) message = 'Excellent — you have a strong beginner understanding. Keep using charts as context, not certainty.';
+        else if (percent >= 71) message = 'Strong understanding — keep practicing careful, risk-aware chart reading.';
+        else if (percent >= 41) message = 'Good start — revisit the sections you found difficult and try again.';
+        document.getElementById('quiz-score').textContent = 'CORRECT ANSWERS: ' + score + ' / ' + questions.length;
+        document.getElementById('quiz-message').textContent = message;
+        document.getElementById('quiz-complete').classList.remove('hidden');
+    });
+
+    // Retained only as inactive legacy code while this template remains cache-safe.
+    // The Practice Lab below is the active custom SVG simulator.
+    if (false) {
+    const scenarioStudies = [
+        ['MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['MACD@tv-basicstudies', 'MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['RSI@tv-basicstudies', 'MASimple@tv-basicstudies'],
+        ['RSI@tv-basicstudies', 'MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['MACD@tv-basicstudies', 'MASimple@tv-basicstudies'],
+        ['MACD@tv-basicstudies', 'MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['RSI@tv-basicstudies', 'MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['MACD@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['RSI@tv-basicstudies', 'MACD@tv-basicstudies', 'MASimple@tv-basicstudies', 'Volume@tv-basicstudies'],
+        ['MASimple@tv-basicstudies', 'RSI@tv-basicstudies', 'Volume@tv-basicstudies']
+    ];
+    const scenarioConcepts = [
+        ['TREND', 'MOVING AVERAGE', 'VOLUME'], ['DOWNTREND', 'MACD', 'VOLUME'], ['RSI', 'RESISTANCE', 'TREND'],
+        ['RSI', 'SUPPORT', 'TREND'], ['MACD', 'MOVING AVERAGE', 'TREND'], ['MACD', 'MOVING AVERAGE', 'VOLUME'],
+        ['SUPPORT', 'VOLUME', 'RISK'], ['RESISTANCE', 'RSI', 'VOLUME'], ['BREAKOUT', 'VOLUME', 'MOVING AVERAGE'],
+        ['FALSE BREAKOUT', 'RESISTANCE', 'VOLUME'], ['TREND', 'RSI', 'MACD', 'RESISTANCE'], ['POSITION SIZE', 'RISK', 'MOVING AVERAGE']
+    ];
+    const scenarios = [
+        { asset: 'Reliance Industries', price: '1,284.40', timeframe: '1D', trend: 'UP', rsi: '58', macd: 'BULLISH', ma: 'ABOVE MA20', volume: 'AVERAGE', support: '1,240', resistance: '1,310', chart: 'up', situation: 'Price has been moving upward and is nearing a previously watched area.', supported: ['buy', 'wait'], reason: 'The uptrend and price above its moving average support a positive context, but average volume still calls for care.', lesson: 'An uptrend is recognized by higher highs and higher lows. It may continue, but no trend is guaranteed.' },
+        { asset: 'TCS', price: '3,642.10', timeframe: '4H', trend: 'DOWN', rsi: '42', macd: 'BEARISH', ma: 'BELOW MA20', volume: 'HIGH', support: '3,580', resistance: '3,710', chart: 'down', situation: 'Recent price action has been weak, with sharp moves lower on the chart.', supported: ['wait', 'sell'], reason: 'The downtrend, bearish MACD, and high volume provide downward context; support is still worth watching.', lesson: 'A downtrend can suggest sellers are in control. It does not guarantee that price cannot bounce.' },
+        { asset: 'Zomato', price: '236.80', timeframe: '1H', trend: 'UP', rsi: '75', macd: 'BULLISH', ma: 'ABOVE MA20', volume: 'AVERAGE', support: '228', resistance: '241', chart: 'resistance', situation: 'Price has had a strong run and is pushing toward a previously watched ceiling.', supported: ['wait', 'sell'], reason: 'RSI above 70 can be called potentially overbought, while nearby resistance adds risk to a new entry.', lesson: 'An elevated RSI provides context, not a promise that price must fall. Combine it with trend and resistance.' },
+        { asset: 'Yes Bank', price: '22.45', timeframe: '1D', trend: 'DOWN', rsi: '25', macd: 'BEARISH', ma: 'BELOW MA20', volume: 'LOW', support: '21.90', resistance: '23.40', chart: 'support', situation: 'Price has fallen toward a previously watched floor after a weak run.', supported: ['wait', 'buy'], reason: 'RSI near 25 may suggest oversold conditions and support shows interest, but bearish trend context has not disappeared.', lesson: 'Oversold does not mean price must rise. Waiting for confirmation can be as reasonable as a cautious entry.' },
+        { asset: 'Infosys', price: '1,598.60', timeframe: '4H', trend: 'UP', rsi: '54', macd: 'BULLISH CROSS', ma: 'ABOVE MA20', volume: 'RISING', support: '1,560', resistance: '1,630', chart: 'up', situation: 'After recent consolidation, the chart may be showing a change in momentum.', supported: ['buy', 'wait'], reason: 'A bullish crossover may suggest improving momentum, but it should be compared with volume and nearby resistance.', lesson: 'MACD crossovers are a momentum clue, not a stand-alone trading instruction.' },
+        { asset: 'Adani Ports', price: '1,112.30', timeframe: '1H', trend: 'DOWN', rsi: '48', macd: 'BEARISH CROSS', ma: 'BELOW MA20', volume: 'RISING', support: '1,085', resistance: '1,140', chart: 'down', situation: 'A short recovery has weakened and the latest candles need careful review.', supported: ['wait', 'sell'], reason: 'The bearish crossover and below-MA price can indicate weakening momentum, although support may slow the move.', lesson: 'A bearish MACD crossover can provide caution. It is not proof that the next candle will fall.' },
+        { asset: 'HDFC Bank', price: '1,694.90', timeframe: '1D', trend: 'SIDEWAYS', rsi: '46', macd: 'NEUTRAL', ma: 'FLAT', volume: 'AVERAGE', support: '1,680', resistance: '1,725', chart: 'support', situation: 'Price is testing an area where previous declines have slowed.', supported: ['buy', 'wait'], reason: 'Support may offer a place to observe buyers, but a sideways market can still break below its range.', lesson: 'Support is an area, not an exact guaranteed price. Consider confirmation and your risk plan.' },
+        { asset: 'Paytm', price: '812.75', timeframe: '4H', trend: 'UP', rsi: '66', macd: 'BULLISH', ma: 'ABOVE MA20', volume: 'LOW', support: '785', resistance: '820', chart: 'resistance', situation: 'Price is testing an area where earlier rallies have stalled.', supported: ['wait', 'sell'], reason: 'Entering right at resistance with low volume can carry additional risk because there is little confirmation of a breakout.', lesson: 'Resistance can slow a rise. Waiting for a confirmed move may be more informative than chasing price.' },
+        { asset: 'TechNova', price: '486.20', timeframe: '1H', trend: 'UP', rsi: '63', macd: 'BULLISH', ma: 'ABOVE MA20', volume: 'HIGH', support: '462', resistance: '478 BROKEN', chart: 'breakout', situation: 'Price is moving beyond a previously watched area while activity appears to be picking up.', supported: ['buy', 'wait'], reason: 'A high-volume breakout may show interest, but confirmation such as a hold or retest can reduce uncertainty.', lesson: 'A breakout is a move beyond resistance. Volume can support the observation, but breakouts can still fail.' },
+        { asset: 'GreenEnergy', price: '154.60', timeframe: '30M', trend: 'SIDEWAYS', rsi: '61', macd: 'WEAK BULLISH', ma: 'FLAT', volume: 'SPIKE THEN LOW', support: '149', resistance: '156', chart: 'falseBreakout', situation: 'Price briefly moved beyond a watched area but is struggling to hold there.', supported: ['wait', 'sell'], reason: 'The return below resistance is a false-breakout warning. Buying after the failed move has less support.', lesson: 'False breakouts happen. A move above a level is stronger when it can hold above that area.' },
+        { asset: 'SagarCorp', price: '2,010.00', timeframe: '1D', trend: 'UP', rsi: '62', macd: 'BULLISH', ma: 'ABOVE MA20', volume: 'HIGH', support: '1,950', resistance: '2,025 NEAR', chart: 'mixed', situation: 'Several chart clues point in different directions near a key area.', supported: ['wait', 'buy'], reason: 'Several signals are bullish, yet resistance creates a competing risk. A measured decision is more useful than relying on one signal.', lesson: 'Multiple indicators can disagree. Consider the whole chart rather than treating any one reading as a guarantee.' },
+        { asset: 'Quantum Motors', price: '748.30', timeframe: '1D', trend: 'UP', rsi: '57', macd: 'BULLISH', ma: 'ABOVE MA20', volume: 'AVERAGE', support: '720', resistance: '770', chart: 'up', situation: 'Your simulated balance is 10,000, and this one decision would use 4,000 of it.', supported: ['wait'], reason: 'Using 40% of a balance in one trade near resistance increases concentration risk even when signals look positive.', lesson: 'Risk management includes position size, a planned exit, and accepting that every setup can be wrong.' }
+    ];
+    let scenarioIndex = 0;
+    let supportedDecisions = 0;
+    const scenarioChart = document.getElementById('scenario-chart');
+    const scenarioResult = document.getElementById('scenario-result');
+    const scenarioDecisionArea = document.getElementById('scenario-decision-area');
+
+    function renderScenario() {
+        const item = scenarios[scenarioIndex];
+        scenarioChart.innerHTML = '<div id="scenario-tradingview-widget" style="height: 420px;"></div>';
+        const intervalMap = { '30M': '30', '1H': '60', '4H': '240', '1D': 'D' };
+        window.createTradeLeagueChart('scenario-tradingview-widget', item.asset, intervalMap[item.timeframe] || 'D', scenarioStudies[scenarioIndex]);
+        document.getElementById('scenario-progress').textContent = 'TRADING SCENARIO ' + String(scenarioIndex + 1).padStart(2, '0') + ' / ' + scenarios.length;
+        document.getElementById('scenario-score-live').textContent = 'WELL-SUPPORTED: ' + supportedDecisions + ' / ' + scenarioIndex;
+        document.getElementById('scenario-asset').textContent = item.asset.toUpperCase();
+        document.getElementById('scenario-price').textContent = 'SIMULATED PRICE // INR ' + item.price;
+        document.getElementById('scenario-situation').textContent = item.situation;
+        scenarioResult.classList.add('hidden');
+        scenarioDecisionArea.classList.remove('hidden');
+    }
+
+    function assessScenario(decision) {
+        const item = scenarios[scenarioIndex];
+        const isSupported = item.supported.indexOf(decision) !== -1;
+        if (isSupported) supportedDecisions += 1;
+        const choice = decision === 'buy' ? 'BUY' : decision === 'wait' ? 'WAIT / ANALYZE' : 'SELL';
+        const assessment = isSupported ? (item.supported.length > 1 ? 'MIXED SIGNALS — REASONABLE' : 'WELL SUPPORTED') : 'HIGHER RISK';
+        const decisionContext = isSupported ? 'This is a reasonable educational choice because it considers the scenario context.' : 'This choice has less support from the complete picture and needs extra caution.';
+        document.getElementById('scenario-result-choice').textContent = choice;
+        document.getElementById('scenario-assessment').textContent = assessment;
+        document.getElementById('scenario-assessment').className = 'text-[9px] mt-2 ' + (isSupported ? 'neon-green' : 'neon-magenta');
+        const why = document.getElementById('scenario-why');
+        why.innerHTML = '';
+        [item.reason, decisionContext].forEach(function (text) { const line = document.createElement('li'); line.textContent = text; why.appendChild(line); });
+        document.getElementById('scenario-lesson').textContent = item.lesson;
+        const concepts = document.getElementById('scenario-concepts');
+        concepts.innerHTML = '';
+        scenarioConcepts[scenarioIndex].forEach(function (concept) {
+            const label = document.createElement('span');
+            label.className = 'border border-[#2a2a3a] px-2 py-1 text-[6px] text-gray-400';
+            label.textContent = '✓ ' + concept;
+            concepts.appendChild(label);
+        });
+        document.getElementById('scenario-next').textContent = scenarioIndex === scenarios.length - 1 ? 'VIEW SIMULATION SUMMARY' : 'NEXT SCENARIO';
+        scenarioDecisionArea.classList.add('hidden');
+        scenarioResult.classList.remove('hidden');
+        document.getElementById('scenario-score-live').textContent = 'WELL-SUPPORTED: ' + supportedDecisions + ' / ' + (scenarioIndex + 1);
+    }
+
+    document.querySelectorAll('[data-scenario-decision]').forEach(function (button) { button.addEventListener('click', function () { assessScenario(button.dataset.scenarioDecision); }); });
+    document.getElementById('scenario-next').addEventListener('click', function () {
+        scenarioIndex += 1;
+        if (scenarioIndex < scenarios.length) { renderScenario(); return; }
+        document.getElementById('scenario-area').classList.add('hidden');
+        document.getElementById('scenario-progress').textContent = 'SIMULATION COMPLETE';
+        const analysisScore = Math.round((supportedDecisions / scenarios.length) * 100);
+        document.getElementById('scenario-final-score').textContent = 'ANALYSIS SCORE // ' + analysisScore + '% (' + supportedDecisions + ' WELL-SUPPORTED DECISIONS / ' + scenarios.length + ')';
+        document.getElementById('scenario-complete').classList.remove('hidden');
+    });
+    document.getElementById('scenario-retry').addEventListener('click', function () {
+        scenarioIndex = 0;
+        supportedDecisions = 0;
+        document.getElementById('scenario-complete').classList.add('hidden');
+        document.getElementById('scenario-area').classList.remove('hidden');
+        renderScenario();
+    });
+
+    renderQuestion();
+    renderScenario();
+    }
+
+    // The quiz stays active independently from the replaced simulator.
+    renderQuestion();
+
+    const labScenarios = [
+        { title: 'CANDLESTICK BASICS', situation: 'The final candle is highlighted. Read its body and wicks.', question: 'What happened during the highlighted candle?', options: ['It closed above its open', 'It never moved', 'It closed below its open'], supported: [0], mode: 'candle', highlight: 11, lesson: 'The body runs from open to close. The upper and lower wicks show the high and low. This green candle closed above its open.', concepts: ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'BULLISH CANDLE'] },
+        { title: 'BULLISH OR BEARISH', situation: 'Several recent candles finish higher overall.', question: 'What does the overall candle movement suggest?', options: ['Mostly sideways', 'Bullish', 'Bearish'], supported: [1], mode: 'bullish', lesson: 'More candles are closing higher and price is stepping upward. That is bullish context, not a promise of the next move.', concepts: ['CANDLE BODIES', 'BULLISH'] },
+        { title: 'IDENTIFY THE TREND', situation: 'Look for the relationship between the highs and lows.', question: 'What type of trend is this?', options: ['Downtrend', 'Uptrend', 'Range'], supported: [1], mode: 'up', lesson: 'The chart forms higher highs and higher lows, which commonly describes an uptrend.', concepts: ['HIGHER HIGHS', 'HIGHER LOWS', 'UPTREND'] },
+        { title: 'DOWNTREND', situation: 'Look at how each rally and decline develops.', question: 'What type of trend is this?', options: ['Uptrend', 'Range', 'Downtrend'], supported: [2], mode: 'down', lesson: 'The chart forms lower highs and lower lows, which commonly describes a downtrend.', concepts: ['LOWER HIGHS', 'LOWER LOWS', 'DOWNTREND'] },
+        { title: 'SUPPORT', situation: 'Price has reached this highlighted area several times before and bounced.', question: 'What is this area called?', options: ['Resistance zone', 'Support zone', 'Guaranteed profit zone'], supported: [1], mode: 'support', lesson: 'Support is an area where falling price has previously slowed or bounced. It is a zone, not a guaranteed floor.', concepts: ['SUPPORT', 'PRICE ZONE'] },
+        { title: 'RESISTANCE', situation: 'Price is approaching a highlighted area where earlier rallies stalled.', question: 'What important price area is price approaching?', options: ['Resistance zone', 'Support zone', 'No price area'], supported: [0], mode: 'resistance', lesson: 'Resistance is an area where rising price has often slowed. It is a zone, not a guaranteed ceiling.', concepts: ['RESISTANCE', 'PRICE ZONE'] },
+        { title: 'BREAKOUT', situation: 'Price has moved above the highlighted resistance zone and volume bars are larger.', question: 'What happened?', options: ['A possible breakout', 'A guaranteed profit', 'A support bounce'], supported: [0], mode: 'breakout', volume: true, resistance: true, lesson: 'Price moved above resistance with more volume, which may suggest a breakout. Confirmation still matters because breakouts can fail.', concepts: ['BREAKOUT', 'RESISTANCE', 'VOLUME'] },
+        { title: 'RSI', situation: 'The purple RSI line is in its own panel below the candles. RSI runs from 0 to 100: the pink 70 guide marks a commonly watched high-momentum area, while the green 30 guide marks a commonly watched low-momentum area. Compare the purple line with these guides; neither one guarantees a reversal.', question: 'How would you describe this RSI reading?', options: ['Potentially oversold', 'Potentially overbought', 'No movement'], supported: [1], mode: 'up', rsi: 75, lesson: 'RSI measures recent momentum on a 0–100 scale. Around 75 is commonly called potentially overbought, but strong trends can stay elevated, so it does not guarantee a fall or reversal.', concepts: ['RSI', '0–100 SCALE', '70 LEVEL', '30 LEVEL', 'MOMENTUM'] },
+        { title: 'MACD', situation: 'Compare the cyan MACD line with the gold signal line.', question: 'What is the MACD currently suggesting?', options: ['A possible bullish crossover', 'An exact future price', 'No context at all'], supported: [0], mode: 'up', macd: true, lesson: 'The MACD line crossing above the signal line can suggest improving momentum. It is context, not a guarantee.', concepts: ['MACD LINE', 'SIGNAL LINE', 'CROSSOVER'] },
+        { title: 'MOVING AVERAGE', situation: 'A gold moving-average line is shown across the candles.', question: 'What does the moving average help us understand?', options: ['The exact next candle', 'The general trend direction', 'A guaranteed buy signal'], supported: [1], mode: 'up', ma: true, lesson: 'A moving average smooths price movement and can help show general trend direction. It is not a guaranteed buy or sell signal.', concepts: ['MOVING AVERAGE', 'TREND'] },
+        { title: 'COMBINE SIGNALS', situation: 'Price is rising with stronger volume and bullish momentum, but it is approaching a highlighted resistance area.', question: 'What would you do?', options: ['BUY', 'WAIT / ANALYZE', 'SELL'], supported: [1, 0], mode: 'breakout', volume: true, rsi: 62, macd: true, ma: true, resistance: true, lesson: 'The positive clues are useful, but nearby resistance creates a trade-off. Waiting for confirmation is reasonable; a cautious buy also needs a risk plan.', concepts: ['TREND', 'VOLUME', 'RSI', 'MACD', 'RESISTANCE'] },
+        { title: 'FINAL TRADING CHALLENGE', situation: 'Analyze the complete picture: candles, volume, moving average, RSI, MACD, support and resistance.', question: 'What would you do?', options: ['BUY', 'WAIT / ANALYZE', 'SELL'], supported: [1], mode: 'resistance', volume: true, rsi: 74, macd: true, ma: true, support: true, resistance: true, lesson: 'Momentum is positive, but RSI is elevated and price is near resistance. Waiting for confirmation is the better-supported educational choice.', concepts: ['TREND', 'RSI', 'MACD', 'VOLUME', 'SUPPORT', 'RESISTANCE', 'RISK'] }
+    ];
+    let labIndex = 0;
+    let labScore = 0;
+    const labChart = document.getElementById('scenario-chart');
+    const labArea = document.getElementById('scenario-area');
+    const labResult = document.getElementById('scenario-result');
+    const labDecision = document.getElementById('scenario-decision-area');
+
+    function labCandles(mode) {
+        const changes = mode === 'candle' ? [-2, 1, 3, -3, 1, -1, 2, -2, 1, -1, 2, 5] : mode === 'bullish' ? [2, -1, 3, 1, -1, 3, 2, -1, 4, 2, -1, 3] : mode === 'down' ? [-5, 2, -6, 1, -5, 2, -6, 1, -5, 2, -4, -5] : mode === 'support' ? [-4, -3, 2, -4, 3, -2, 4, -3, 3, 2, 3, 2] : mode === 'resistance' ? [4, 3, -2, 4, -1, 3, -2, 3, 2, -2, 1, -1] : [4, -2, 5, -1, 4, -2, 5, -1, 4, 3, -2, 5];
+        let price = mode === 'down' ? 86 : 44;
+        return changes.map(function (change, index) { const open = price; const close = price + change; price = close; return { open: open, close: close, high: Math.max(open, close) + 3 + (index % 2), low: Math.min(open, close) - 3 - ((index + 1) % 2) }; });
+    }
+    function labPath(points) { return points.map(function (p, i) { return (i ? 'L' : 'M') + p[0] + ' ' + p[1]; }).join(' '); }
+    function drawLab(item) {
+        const hasLowerPanel = item.volume || item.rsi || item.macd;
+        const chartHeight = hasLowerPanel ? 420 : 225;
+        labChart.style.height = chartHeight + 'px';
+        const candles = labCandles(item.mode); const min = Math.min.apply(null, candles.map(c => c.low)) - 4; const max = Math.max.apply(null, candles.map(c => c.high)) + 4;
+        const y = v => 165 - ((v - min) / (max - min)) * 120; const x = i => 55 + i * 47;
+        let svg = '<svg viewBox="0 0 620 ' + chartHeight + '" style="height:' + chartHeight + 'px" role="img" aria-label="Simulated candlestick lesson chart">';
+        [45, 75, 105, 135, 165].forEach(function (line) { svg += '<line class="lab-grid" x1="45" y1="' + line + '" x2="605" y2="' + line + '"/>'; });
+        if (item.support || item.mode === 'support') svg += '<rect class="lab-zone-support" x="45" y="142" width="560" height="16"/><text class="lab-label" x="466" y="138">HIGHLIGHTED AREA</text>';
+        if (item.resistance || item.mode === 'resistance' || item.mode === 'breakout') svg += '<rect class="lab-zone-resistance" x="45" y="67" width="560" height="16"/><text class="lab-label" x="466" y="63">HIGHLIGHTED AREA</text>';
+        candles.forEach(function (c, i) { const cx = x(i), bullish = c.close >= c.open, top = y(Math.max(c.open,c.close)), height = Math.max(5, Math.abs(y(c.open)-y(c.close))); const cls = bullish ? '#00ff88' : '#ff005c'; const box = item.highlight === i ? '<rect x="' + (cx-18) + '" y="32" width="36" height="140" fill="none" stroke="#ffd700" stroke-dasharray="4 3"/>' : ''; svg += box + '<line x1="' + cx + '" y1="' + y(c.high) + '" x2="' + cx + '" y2="' + y(c.low) + '" stroke="' + cls + '" stroke-width="2"/><rect x="' + (cx-8) + '" y="' + top + '" width="16" height="' + height + '" fill="' + cls + '"/>'; svg += '<text class="lab-axis" x="' + (cx-8) + '" y="185">P' + (i+1) + '</text>'; });
+        if (item.ma) { const points = candles.map((c,i) => [x(i), y((c.open+c.close)/2 + (i < 3 ? -4 : 0))]); svg += '<path class="lab-ma" d="' + labPath(points) + '"/><text class="lab-label" x="50" y="28">MA</text>'; }
+        if (item.volume) { candles.forEach(function (c,i) { const h = 10 + ((i * 9) % 22) + (i > 8 ? 12 : 0); svg += '<rect x="' + (x(i)-7) + '" y="' + (230-h) + '" width="14" height="' + h + '" fill="#00e5ff" opacity=".7"/>'; }); svg += '<text class="lab-label" x="50" y="205">VOLUME</text>'; }
+        if (item.rsi) { const ry = 300 - (item.rsi / 100) * 45; svg += '<line x1="45" y1="268" x2="605" y2="268" stroke="#ff005c" stroke-dasharray="4 3"/><line x1="45" y1="295" x2="605" y2="295" stroke="#00ff88" stroke-dasharray="4 3"/><path class="lab-rsi-line" d="M50 304 L180 295 L300 281 L430 ' + ry + ' L600 ' + ry + '"/><text class="lab-axis" x="10" y="272">70</text><text class="lab-axis" x="10" y="299">30</text><text class="lab-label" x="50" y="324">RSI</text>'; }
+        if (item.macd) { svg += '<path class="lab-macd" d="M50 394 L170 388 L280 378 L390 360 L500 348 L600 338"/><path class="lab-signal" d="M50 365 L170 370 L280 374 L390 372 L500 365 L600 356"/><text class="lab-label" x="50" y="414">MACD</text>'; }
+        svg += '<text class="lab-axis" x="8" y="45">HIGH</text><text class="lab-axis" x="8" y="165">LOW</text></svg>'; labChart.innerHTML = svg;
+    }
+    function renderLab() {
+        const item = labScenarios[labIndex]; drawLab(item); document.getElementById('scenario-progress').textContent = 'SCENARIO ' + String(labIndex+1).padStart(2,'0') + ' / 12'; document.getElementById('scenario-bar').textContent = '█'.repeat(labIndex+1) + '░'.repeat(11-labIndex) + ' ' + (labIndex+1) + ' / 12'; document.getElementById('scenario-asset').textContent = item.title; document.getElementById('scenario-situation').textContent = item.situation; document.getElementById('scenario-question').textContent = item.question; const buttons = document.getElementById('scenario-buttons'); buttons.innerHTML = ''; item.options.forEach(function (option,i) { const b=document.createElement('button'); b.type='button'; b.className='scenario-choice ' + (option === 'BUY' ? 'scenario-buy' : option === 'SELL' ? 'scenario-sell' : 'scenario-wait'); b.textContent=option; b.onclick=function(){ assessLab(i); }; buttons.appendChild(b); }); labResult.classList.add('hidden'); labDecision.classList.remove('hidden'); }
+    function assessLab(selected) { const item=labScenarios[labIndex], good=item.supported.indexOf(selected)!==-1; if(good) labScore++; document.getElementById('scenario-result-choice').textContent=item.options[selected]; document.getElementById('scenario-assessment').textContent=good ? (item.supported.length>1 ? 'REASONABLE — MIXED SIGNALS' : 'WELL SUPPORTED') : 'RISKY / POORLY SUPPORTED'; document.getElementById('scenario-assessment').className='text-[9px] mt-2 '+(good?'neon-green':'neon-magenta'); const why=document.getElementById('scenario-why'); why.innerHTML=''; const reason=document.createElement('li'); reason.textContent=good ? 'Your choice is supported by the visible chart evidence.' : 'Your choice misses important evidence visible on the chart, so it carries more uncertainty.'; why.appendChild(reason); document.getElementById('scenario-lesson').textContent=item.lesson; const concepts=document.getElementById('scenario-concepts'); concepts.innerHTML=''; item.concepts.forEach(function(c){const s=document.createElement('span');s.className='border border-[#2a2a3a] px-2 py-1 text-[6px] text-gray-400';s.textContent='✓ '+c;concepts.appendChild(s);}); document.getElementById('scenario-next').textContent=labIndex===11?'VIEW SIMULATION SUMMARY':'NEXT SCENARIO'; labDecision.classList.add('hidden'); labResult.classList.remove('hidden'); }
+    document.getElementById('scenario-next').addEventListener('click',function(){labIndex++;if(labIndex<12){renderLab();return;}labArea.classList.add('hidden');document.getElementById('scenario-progress').textContent='SIMULATION COMPLETE';document.getElementById('scenario-final-score').textContent='SCENARIOS COMPLETED: 12 / 12 // ANALYSIS SCORE: '+Math.round(labScore/12*100)+'%';document.getElementById('scenario-complete').classList.remove('hidden');});
+    document.getElementById('scenario-retry').addEventListener('click',function(){labIndex=0;labScore=0;document.getElementById('scenario-complete').classList.add('hidden');labArea.classList.remove('hidden');renderLab();});
+    renderLab();
+});
+</script>
+{% endblock %}

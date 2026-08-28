@@ -11,7 +11,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
     {% for asset in assets %}
-        <div class="pixel-card p-5 hover:border-[#00ff88] transition-all">
+        <a href="{% url 'market_asset_detail' asset.id %}" class="pixel-card block p-5 hover:border-[#00ff88] transition-all group">
             <h2 class="text-[10px] neon-cyan font-bold mb-2">{{ asset.name }}</h2>
             <p class="text-[8px] text-gray-500 mb-4 leading-relaxed">{{ asset.info_news_text }}</p>
 
@@ -37,7 +37,8 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
+            <p class="mt-4 text-[7px] text-gray-600 group-hover:neon-cyan transition">VIEW MARKET INTEL &gt;</p>
+        </a>
     {% endfor %}
     </div>
 </div>

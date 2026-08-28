@@ -1,0 +1,48 @@
+<div id="tradingview-help-modal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/80 p-3 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="tradingview-help-title" onclick="if (event.target === this) toggleTradingViewHelp(false)">
+    <div class="pixel-card w-full max-w-4xl max-h-[88vh] overflow-y-auto p-4 sm:p-6" role="document">
+        <div class="flex items-center justify-between gap-4 border-b-2 border-[#2a2a3a] pb-4">
+            <div>
+                <p class="text-[7px] neon-cyan">/// GAME ROOM QUICK HELP</p>
+                <h2 id="tradingview-help-title" class="text-[11px] text-white mt-2">READ THE TRADINGVIEW CHART</h2>
+            </div>
+            <button type="button" onclick="toggleTradingViewHelp(false)" class="w-8 h-8 shrink-0 border-2 border-[#ff005c] text-[#ff005c] hover:bg-[#ff005c] hover:text-white transition text-[10px]" aria-label="Close chart help">X</button>
+        </div>
+
+        <section class="mt-5">
+            <h3 class="text-[8px] neon-green border-b border-[#2a2a3a] pb-2">01 // CHART BASICS</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-3 text-[7px] leading-relaxed text-gray-400">
+                <p><span class="text-white font-bold">CANDLESTICK</span><br>One candle shows price movement during the chosen timeframe. Its body spans open to close; the wicks show the high and low. A close above open is bullish; a close below open is bearish.</p>
+                <p><span class="text-white font-bold">OPEN (O)</span><br>The first price of that candle's timeframe.</p>
+                <p><span class="text-white font-bold">HIGH (H)</span><br>The highest price reached during that timeframe.</p>
+                <p><span class="text-white font-bold">LOW (L)</span><br>The lowest price reached during that timeframe.</p>
+                <p><span class="text-white font-bold">CLOSE (C)</span><br>The final price of that timeframe; it helps show whether the candle finished up or down.</p>
+                <p><span class="text-white font-bold">TIMEFRAME</span><br>1m, 30m, 1h and 1D mean one minute, 30 minutes, one hour and one day per candle. Shorter views show more detail; longer views show the broader trend.</p>
+                <p><span class="text-white font-bold">VOLUME</span><br>How much was traded during a period. Higher volume can show stronger interest behind a move; low volume can mean less conviction.</p>
+                <p><span class="text-white font-bold">PRICE AXIS</span><br>The scale on the right shows price levels. Read it with the time axis below the chart.</p>
+                <p><span class="text-white font-bold">CHART / DRAWING TOOLS</span><br>Use the TradingView toolbar to change chart type, add trend lines, or mark areas. They help you observe; they do not predict prices.</p>
+            </div>
+        </section>
+
+        <section class="mt-6">
+            <h3 class="text-[8px] neon-cyan border-b border-[#2a2a3a] pb-2">02 // INDICATORS</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-3 text-[7px] leading-relaxed text-gray-400">
+                <p><span class="text-white font-bold">RSI</span><br>A 0–100 momentum measure. Below 30 is commonly called oversold and above 70 overbought, but neither level guarantees a rebound or fall.</p>
+                <p><span class="text-white font-bold">MACD</span><br>Compares two moving averages to show momentum. When the MACD line crosses the signal line it can suggest momentum is changing, not a guaranteed direction.</p>
+                <p><span class="text-white font-bold">MOVING AVERAGE (MA)</span><br>Smooths past prices to show the general trend. Price above or below an MA gives context, not an automatic buy or sell signal.</p>
+                <p><span class="text-white font-bold">INDICATORS</span><br>Extra tools such as RSI, MACD and MA. Compare them with price and volume instead of relying on one reading.</p>
+            </div>
+        </section>
+
+        <section class="mt-6">
+            <h3 class="text-[8px] neon-gold border-b border-[#2a2a3a] pb-2">03 // TRADING BASICS</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-3 text-[7px] leading-relaxed text-gray-400">
+                <p><span class="text-white font-bold">BUY / BULLISH</span><br>Bullish means you expect price to rise. It is an outlook, not a promise that buying will profit.</p>
+                <p><span class="text-white font-bold">SELL / BEARISH</span><br>Bearish means you expect price to fall. It is an outlook, not a guarantee that selling is right.</p>
+                <p><span class="text-white font-bold">SUPPORT</span><br>An area where falling price has often slowed or bounced. It is usually a zone, not an exact guaranteed price.</p>
+                <p><span class="text-white font-bold">RESISTANCE</span><br>An area where rising price has often slowed or turned down. It is usually a zone, not an exact guaranteed price.</p>
+            </div>
+        </section>
+
+        <p class="mt-6 border-t-2 border-[#2a2a3a] pt-4 text-[7px] text-gray-500 leading-relaxed">EDUCATION ONLY — TradeLeague is a simulation. These chart terms and signals are not financial advice.</p>
+    </div>
+</div>

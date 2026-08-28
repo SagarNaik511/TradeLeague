@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django.conf import settings
 from datetime import timedelta
 from .forms import *
 from .models import *
@@ -25,7 +26,12 @@ def register_view(request):
         user.set_password(form.cleaned_data["password"])
         user.save()  # profile created via signal
         return redirect("login")
-    return render(request, "register.html", {"form": form})
+    return render(request, "register.html", {
+        "form": form,
+        "google_login_enabled": bool(
+            settings.GOOGLE_CLIENT_ID and settings.GOOGLE_CLIENT_SECRET
+        ),
+    })
 
 
 def login_view(request):
@@ -38,7 +44,12 @@ def login_view(request):
         if user:
             login(request, user)
             return redirect("dashboard")
-    return render(request, "login.html", {"form": form})
+    return render(request, "login.html", {
+        "form": form,
+        "google_login_enabled": bool(
+            settings.GOOGLE_CLIENT_ID and settings.GOOGLE_CLIENT_SECRET
+        ),
+    })
 
 
 def logout_view(request):
@@ -61,6 +72,11 @@ def dashboard(request):
 @login_required
 def how_to_play(request):
     return render(request, "how_to_play.html") 
+
+
+@login_required
+def learn(request):
+    return render(request, "learn.html")
 
 # ---------- LOBBY ----------
 
@@ -360,3 +376,9 @@ def result_view(request, room_id):
 def market_view(request):
     assets = Asset.objects.all()
     return render(request, "market.html", {"assets": assets})
+
+
+@login_required
+def market_asset_detail(request, asset_id):
+    asset = get_object_or_404(Asset, id=asset_id)
+    return render(request, "market_asset_detail.html", {"asset": asset})

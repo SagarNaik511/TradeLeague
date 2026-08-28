@@ -1,0 +1,18 @@
+<div id="tradingview-help-modal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true" aria-labelledby="tradingview-help-title" onclick="if (event.target === this) toggleTradingViewHelp(false)">
+    <div class="pixel-card w-full max-w-3xl max-h-[85vh] overflow-y-auto p-5 sm:p-6" role="document">
+        <div class="flex items-center justify-between gap-4 border-b-2 border-[#2a2a3a] pb-4">
+            <div><p class="text-[7px] neon-cyan">/// TRADINGVIEW STARTER GUIDE</p><h2 id="tradingview-help-title" class="text-[11px] text-white mt-2">READ THE CHART</h2></div>
+            <button type="button" onclick="toggleTradingViewHelp(false)" class="w-8 h-8 border-2 border-[#ff005c] text-[#ff005c] hover:bg-[#ff005c] hover:text-white transition text-[10px]" aria-label="Close chart help">X</button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mt-5 text-[7px] leading-relaxed text-gray-400">
+            <p><span class="neon-green">CANDLESTICK</span><br>A bar showing price movement for one period.</p><p><span class="neon-cyan">O / H / L / C</span><br>Open, highest, lowest and closing price for that candle.</p>
+            <p><span class="neon-gold">TIMEFRAME</span><br>1m, 30m, 1h and 1D show one minute, 30 minutes, one hour or one day per candle.</p><p><span class="neon-green">VOLUME</span><br>How much was traded. Bigger bars often mean more activity.</p>
+            <p><span class="neon-cyan">RSI</span><br>A momentum guide. High can mean overbought; low can mean oversold.</p><p><span class="neon-cyan">MACD</span><br>Compares momentum lines to help spot trend changes.</p>
+            <p><span class="neon-cyan">MOVING AVERAGE (MA)</span><br>A smoothed average price that helps show the trend.</p><p><span class="neon-gold">INDICATORS</span><br>Extra chart tools such as RSI, MACD and MA. Use them as clues, not answers.</p>
+            <p><span class="neon-green">PRICE AXIS</span><br>The right-side scale shows the price level.</p><p><span class="neon-green">CHART / DRAWING TOOLS</span><br>Use the toolbar to change view, add lines, or mark areas on the chart.</p>
+            <p><span class="neon-green">BUY / BULLISH</span><br>Bullish means price may rise. It is not a guarantee to buy.</p><p><span class="text-[#ff005c]">SELL / BEARISH</span><br>Bearish means price may fall. It is not a guarantee to sell.</p>
+            <p><span class="neon-gold">SUPPORT</span><br>A price area where a fall has previously slowed or bounced.</p><p><span class="neon-gold">RESISTANCE</span><br>A price area where a rise has previously slowed or turned down.</p>
+        </div>
+        <p class="mt-6 border-t-2 border-[#2a2a3a] pt-4 text-[7px] text-gray-500 leading-relaxed">EDUCATION ONLY — TradeLeague is a simulation. Chart terms and signals are not financial advice.</p>
+    </div>
+</div>

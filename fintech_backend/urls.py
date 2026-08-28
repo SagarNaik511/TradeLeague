@@ -10,6 +10,7 @@ def health_check(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/", include("allauth.urls")),
 
     # Move API health check away from root
     path("api/health/", health_check),

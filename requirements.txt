@@ -5,6 +5,8 @@ django-cors-headers>=4.3,<4.6
 channels>=4.0,<4.2
 python-decouple>=3.8
 python-dotenv>=1.0
+django-allauth>=64,<66
+requests>=2.31,<3
 
 # Production
 daphne>=4.0,<4.2
