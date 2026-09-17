@@ -1,0 +1,17 @@
+[Unit]
+Description=TradeLeague Django ASGI application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/tradeleague
+EnvironmentFile=/home/ubuntu/tradeleague/.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/ubuntu/tradeleague/.venv/bin/daphne -b 127.0.0.1 -p 8000 fintech_backend.asgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -13,7 +13,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(override=True)
+load_dotenv()
 # --------------------------------------------------
 # BASE CONFIG
 # --------------------------------------------------
@@ -24,15 +24,24 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    "http://localhost,http://127.0.0.1"
-).split(",")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CSRF_TRUSTED_ORIGINS", "http://localhost,http://127.0.0.1"
+    ).split(",")
+    if origin.strip()
+]
+
+
+def env_bool(name, default=False):
+    """Read a boolean environment value without duplicating parsing rules."""
+    return os.getenv(name, str(default)).lower() in ("true", "1", "yes", "on")
 
 # --------------------------------------------------
 # APPLICATIONS
@@ -77,7 +86,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "True").lower() in ("true", "1", "yes")
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG)
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
@@ -247,11 +256,19 @@ else:
 # SECURITY (production)
 # --------------------------------------------------
 if not DEBUG:
+    # Keep HTTP working while the app is initially accessed by its Lightsail
+    # public IP. Set USE_HTTPS=True only after a domain and TLS certificate are
+    # configured; otherwise secure cookies would prevent users from logging in.
+    USE_HTTPS = env_bool("USE_HTTPS", False)
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_SSL_REDIRECT = USE_HTTPS
+    SESSION_COOKIE_SECURE = USE_HTTPS
+    CSRF_COOKIE_SECURE = USE_HTTPS
+    SECURE_HSTS_SECONDS = 31536000 if USE_HTTPS else 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = USE_HTTPS
+    SECURE_HSTS_PRELOAD = USE_HTTPS
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = 'same-origin'
     X_FRAME_OPTIONS = 'DENY'
 
 
