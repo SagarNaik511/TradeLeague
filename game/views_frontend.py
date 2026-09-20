@@ -301,26 +301,57 @@ def result_view(request, room_id):
     room = get_object_or_404(GameRoom, id=room_id)
     invs = Investment.objects.filter(room=room)
     analysis = analyze(invs)
+    for investment in invs:
+        # Presentation-only data: results are still deterministic because
+        # analyze() seeds its simulation from the saved investments.
+        investment.simulation = analysis["investment_results"].get(investment.id, {})
+
     current_user_profit = analysis["profit_map"].get(request.user.id, 0)
     opponent = room.opponent if request.user == room.host else room.host
     opponent_profit = analysis["profit_map"].get(opponent.id, 0) if opponent else 0
     is_draw = current_user_profit == opponent_profit
     did_win = current_user_profit > opponent_profit
     user_invs = [inv for inv in invs if inv.player_id == request.user.id]
-    weak_picks = [inv.asset.name for inv in user_invs if inv.asset.growth_percent < 0]
-    missed_growth = [
-        inv.asset.name
+    user_results = [
+        {
+            "investment": inv,
+            "simulation": analysis["investment_results"].get(inv.id, {}),
+        }
         for inv in user_invs
-        if inv.asset.growth_percent > 0 and inv.amount < 1000
     ]
+    profitable_outcomes = [
+        result["investment"].asset.name
+        for result in user_results
+        if result["simulation"].get("profit", 0) > 0
+    ]
+    negative_outcomes = [
+        result["investment"].asset.name
+        for result in user_results
+        if result["simulation"].get("profit", 0) <= 0
+    ]
+    high_risk_outcomes = [
+        result["investment"].asset.name
+        for result in user_results
+        if result["simulation"].get("risk_level") == "HIGH"
+    ]
+    negative_baseline_but_profit = [
+        result["investment"].asset.name
+        for result in user_results
+        if result["investment"].asset.growth_percent < 0
+        and result["simulation"].get("profit", 0) > 0
+    ]
+    user_diversification_score = len({inv.asset_id for inv in user_invs})
     result_context = {
         "current_user_profit": current_user_profit,
         "opponent_profit": opponent_profit,
         "did_win": did_win,
         "is_draw": is_draw,
-        "weak_picks": weak_picks,
-        "missed_growth": missed_growth,
         "user_investment_count": len(user_invs),
+        "profitable_outcomes": profitable_outcomes,
+        "negative_outcomes": negative_outcomes,
+        "high_risk_outcomes": high_risk_outcomes,
+        "negative_baseline_but_profit": negative_baseline_but_profit,
+        "user_diversification_score": user_diversification_score,
     }
 
     # Already settled → just show

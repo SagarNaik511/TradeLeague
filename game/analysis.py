@@ -20,6 +20,7 @@ def analyze(investments):
     profit_map = {}
     good = []
     bad = []
+    investment_results = {}
 
     for inv in investments:
         asset = inv.asset
@@ -46,14 +47,30 @@ def analyze(investments):
         else:
             time_factor = rng.uniform(1.5, 2.0)
 
+        # The displayed growth is the asset's baseline direction. Each room
+        # then simulates a time-adjusted trend plus a risk-based market move.
+        # Keeping these values lets the result page explain an unexpected
+        # outcome instead of presenting the final P/L as a mystery.
+        trend_return = trend * time_factor
+        final_return = trend_return + volatility
+
         # ----- FUTURE PRICE -----
-        future_price = base_price * (1 + trend * time_factor + volatility)
+        future_price = base_price * (1 + final_return)
 
         # ----- PROFIT / LOSS -----
         profit = amount * (future_price - base_price) / base_price
 
         profit_map.setdefault(inv.player.id, 0)
         profit_map[inv.player.id] += profit
+
+        investment_results[inv.id] = {
+            "base_growth_percent": asset.growth_percent,
+            "trend_return_percent": trend_return * 100,
+            "volatility_percent": volatility * 100,
+            "final_return_percent": final_return * 100,
+            "profit": profit,
+            "risk_level": asset.risk_level,
+        }
 
         if profit > 0:
             good.append(asset.name)
@@ -64,6 +81,7 @@ def analyze(investments):
         "profit_map": profit_map,
         "good_decisions": good,
         "bad_decisions": bad,
+        "investment_results": investment_results,
         "diversification_score": len(set(i.asset_id for i in investments)),
         "risk_behavior": "balanced" if len(good) >= len(bad) else "aggressive"
     }

@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import resolve, reverse
 
-from .models import Asset
+from .analysis import analyze
+from .models import Asset, GameRoom, Investment
 
 
 class AuthenticationTests(TestCase):
@@ -108,3 +109,23 @@ class AuthenticationTests(TestCase):
         self.assertNotContains(response, 'READ-ONLY CHART INSPECTION')
         self.assertContains(response, reverse('market'))
         self.assertContains(response, reverse('lobby'))
+
+    def test_analysis_exposes_repeatable_trade_explanation(self):
+        room = GameRoom.objects.create(host=self.user, trade_duration=5, status='active')
+        investment = Investment.objects.create(
+            room=room,
+            player=self.user,
+            asset=self.asset,
+            amount=100,
+        )
+
+        first = analyze(Investment.objects.filter(room=room))
+        second = analyze(Investment.objects.filter(room=room))
+        result = first['investment_results'][investment.id]
+
+        self.assertEqual(first['profit_map'], second['profit_map'])
+        self.assertEqual(result, second['investment_results'][investment.id])
+        self.assertAlmostEqual(
+            result['final_return_percent'],
+            result['trend_return_percent'] + result['volatility_percent'],
+        )

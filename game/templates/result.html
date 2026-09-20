@@ -67,7 +67,7 @@
                                         <p class="text-[9px] neon-green font-bold">₹{{ investment.amount|floatformat:2 }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Growth</p>
+                                        <p class="text-[7px] text-gray-600 uppercase tracking-wider mb-1">Base Growth</p>
                                         {% if investment.asset.growth_percent > 0 %}
                                             <p class="text-[9px] neon-green font-bold">
                                                 +{{ investment.asset.growth_percent|floatformat:1 }}%
@@ -81,6 +81,35 @@
                                         {% endif %}
                                     </div>
                                 </div>
+                                {% if investment.simulation %}
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-[#2a2a3a]">
+                                        <div>
+                                            <p class="text-[6px] text-gray-600 uppercase tracking-wider">Trend Effect</p>
+                                            <p class="text-[8px] font-bold {% if investment.simulation.trend_return_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">
+                                                {% if investment.simulation.trend_return_percent >= 0 %}+{% endif %}{{ investment.simulation.trend_return_percent|floatformat:2 }}%
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[6px] text-gray-600 uppercase tracking-wider">Risk Movement</p>
+                                            <p class="text-[8px] font-bold {% if investment.simulation.volatility_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">
+                                                {% if investment.simulation.volatility_percent >= 0 %}+{% endif %}{{ investment.simulation.volatility_percent|floatformat:2 }}%
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[6px] text-gray-600 uppercase tracking-wider">Final Return</p>
+                                            <p class="text-[8px] font-bold {% if investment.simulation.final_return_percent >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">
+                                                {% if investment.simulation.final_return_percent >= 0 %}+{% endif %}{{ investment.simulation.final_return_percent|floatformat:2 }}%
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[6px] text-gray-600 uppercase tracking-wider">Simulated P/L</p>
+                                            <p class="text-[8px] font-bold {% if investment.simulation.profit >= 0 %}neon-green{% else %}text-[#ff005c]{% endif %}">
+                                                {% if investment.simulation.profit >= 0 %}+{% endif %}₹{{ investment.simulation.profit|floatformat:2 }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p class="text-[6px] text-gray-600 mt-4">Final return = time-adjusted trend + simulated movement for this asset's {{ investment.simulation.risk_level|lower }} risk level.</p>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
@@ -101,19 +130,19 @@
 
                 {% if analysis %}
                     <div class="space-y-3">
-                        <!-- Good Decisions -->
+                        <!-- Current player's simulated outcomes -->
                         <div class="bg-[#00ff8810] border border-[#00ff8833] p-4">
-                            <p class="text-[7px] neon-green uppercase tracking-wider mb-1">Good Decisions</p>
-                            <p class="text-xl neon-green font-bold">
-                                {{ analysis.good_decisions|default:"0" }}
+                            <p class="text-[7px] neon-green uppercase tracking-wider mb-1">Your Profitable Outcomes</p>
+                            <p class="text-[10px] neon-green font-bold leading-relaxed">
+                                {{ result_context.profitable_outcomes|join:", "|default:"None" }}
                             </p>
                         </div>
 
-                        <!-- Bad Decisions -->
+                        <!-- Current player's simulated outcomes -->
                         <div class="bg-[#ff005c10] border border-[#ff005c33] p-4">
-                            <p class="text-[7px] text-[#ff005c] uppercase tracking-wider mb-1">Bad Decisions</p>
-                            <p class="text-xl text-[#ff005c] font-bold">
-                                {{ analysis.bad_decisions|default:"0" }}
+                            <p class="text-[7px] text-[#ff005c] uppercase tracking-wider mb-1">Your Negative Outcomes</p>
+                            <p class="text-[10px] text-[#ff005c] font-bold leading-relaxed">
+                                {{ result_context.negative_outcomes|join:", "|default:"None" }}
                             </p>
                         </div>
 
@@ -122,7 +151,7 @@
                             <p class="text-[7px] neon-cyan uppercase tracking-wider mb-1">Diversification</p>
                             <div class="flex items-end space-x-2">
                                 <p class="text-xl neon-cyan font-bold">
-                                    {{ analysis.diversification_score|default:"0"|floatformat:1 }}
+                                    {{ result_context.user_diversification_score|default:"0"|floatformat:1 }}
                                 </p>
                                 <p class="text-[8px] text-gray-500">/10</p>
                             </div>
@@ -131,8 +160,12 @@
                         <!-- Risk Behavior -->
                         <div class="bg-[#ffd70010] border border-[#ffd70033] p-4">
                             <p class="text-[7px] neon-gold uppercase tracking-wider mb-1">Risk Behavior</p>
-                            <p class="text-[10px] text-white font-bold uppercase">
-                                {{ analysis.risk_behavior|default:"Neutral" }}
+                            <p class="text-[8px] text-white font-bold uppercase leading-relaxed">
+                                {% if result_context.high_risk_outcomes %}
+                                    HIGH RISK: {{ result_context.high_risk_outcomes|join:", " }}
+                                {% else %}
+                                    LOW / MEDIUM RISK
+                                {% endif %}
                             </p>
                         </div>
 
@@ -161,14 +194,14 @@
                         <p class="text-[8px] text-gray-400 leading-relaxed">
                             {% if result_context.user_investment_count == 0 %}
                                 You did not invest in any asset, so you missed every profit opportunity.
-                            {% elif result_context.weak_picks %}
-                                Your weaker picks were {{ result_context.weak_picks|join:", " }}. These assets had negative growth, so they pulled your score down.
-                            {% elif result_context.missed_growth %}
-                                You picked growing assets, but invested lightly in {{ result_context.missed_growth|join:", " }}. Consider sizing up when the signal is strong.
-                            {% elif analysis.risk_behavior == 'aggressive' %}
-                                You took too much concentrated risk. Try spreading capital across more assets next round.
+                            {% elif result_context.negative_outcomes %}
+                                {{ result_context.negative_outcomes|join:", " }} finished negative in this simulation. Compare its trend effect and risk movement before changing your next position size.
+                            {% elif result_context.negative_baseline_but_profit %}
+                                {{ result_context.negative_baseline_but_profit|join:", " }} had negative base growth but finished positive because its simulated risk movement was strong. That outcome is possible, not guaranteed.
+                            {% elif result_context.high_risk_outcomes %}
+                                Your high-risk trade finished positive this time. High risk can amplify gains or losses, so it is not a guaranteed advantage.
                             {% else %}
-                                Your choices were balanced. To improve, compare growth, risk level, and chart signals before placing larger orders.
+                                Your simulated outcome was positive. Compare base growth, risk movement, and chart signals before making another trade.
                             {% endif %}
                         </p>
                     </div>
