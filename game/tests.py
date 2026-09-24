@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -129,3 +131,22 @@ class AuthenticationTests(TestCase):
             result['final_return_percent'],
             result['trend_return_percent'] + result['volatility_percent'],
         )
+
+    def test_api_root_lists_existing_endpoints(self):
+        response = self.client.get(reverse('api_root'), HTTP_ACCEPT='application/json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['assets'], 'http://127.0.0.1:8000/api/assets/')
+        self.assertEqual(response.data['me'], 'http://127.0.0.1:8000/api/me/')
+
+    def test_logged_in_user_can_create_room_through_session_api_auth(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse('api_create_room'),
+            data=json.dumps({}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['host'], self.user.id)

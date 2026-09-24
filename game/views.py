@@ -25,7 +25,9 @@ def create_room(request):
     room = GameRoom.objects.create(
         room_code=code,
         host=request.user,
-        mode=request.data.get("mode","stock")
+        # The frontend model has no `mode` field. The game currently uses the
+        # model's default duration and status, which keeps this API endpoint
+        # usable from the DRF browsable form.
     )
     return Response(GameRoomSerializer(room).data)
 

@@ -223,10 +223,14 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # Lets the DRF browsable API use the user's existing Django login
+        # session. JWT remains available for external/API clients.
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
 }
 
